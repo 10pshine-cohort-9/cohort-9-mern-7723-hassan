@@ -10,31 +10,32 @@ router.get("/test", (req, res) => {
     res.send("Test route works");
 });
 router.post("/login", async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({
-            message: "Email and password are required"
-        });
-    }
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password are required"
+            });
+        }
 
-    const foundUser = await User.findOne({ email });
+        const foundUser = await User.findOne({ email });
 
-    if (!foundUser) {
-        return res.status(404).json({
-            message: "User not found"
-        });
-    }
+        if (!foundUser) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
 
-    const isMatch = await bcrypt.compare(password, foundUser.password);
+        const isMatch = await bcrypt.compare(password, foundUser.password);
 
-    if (!isMatch) {
-        return res.status(401).json({
-            message: "Invalid password"
-        });
-    }
-    // Generate JWT
-    const token = jwt.sign(
+        if (!isMatch) {
+            return res.status(401).json({
+                message: "Invalid password"
+            });
+        }
+
+        const token = jwt.sign(
             {
                 id: foundUser._id,
                 email: foundUser.email
@@ -43,18 +44,27 @@ router.post("/login", async (req, res) => {
             {
                 expiresIn: process.env.JWT_EXPIRES_IN
             }
-    );
+        );
 
-    res.status(200).json({
-        success: true,
-        message: "User logged in successfully",
-        user: {
-            id: foundUser._id,
-            username: foundUser.username,
-            email: foundUser.email
-        },
-        token
-    });
+        return res.status(200).json({
+            success: true,
+            message: "User logged in successfully",
+            user: {
+                id: foundUser._id,
+                username: foundUser.username,
+                email: foundUser.email
+            },
+            token
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 });
 
 router.post("/register", async (req, res) => {
@@ -73,7 +83,15 @@ router.post("/register", async (req, res) => {
             message: "User already exists"
         });
     }
+    const passwordRegex =
+        /^(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,}$/;
 
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+            success: false,
+            message: "Password must be at least 6 characters long and contain at least one number and one special character."
+        });
+    }
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = new User({
