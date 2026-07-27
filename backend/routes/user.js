@@ -109,19 +109,13 @@ router.post("/register", async (req, res) => {
 });
 router.get("/profile", async (req, res) => {
     try {
-        // Log the incoming Authorization header
-        console.log("Authorization Header:", req.headers.authorization);
-
         const authHeader = req.headers.authorization;
-
         if (!authHeader) {
             return res.status(401).json({
                 success: false,
                 message: "Authorization header missing"
             });
         }
-
-        // Check Bearer format
         if (!authHeader.startsWith("Bearer ")) {
             return res.status(401).json({
                 success: false,
@@ -129,35 +123,22 @@ router.get("/profile", async (req, res) => {
             });
         }
 
-        // Extract token
         const token = authHeader.split(" ")[1];
-
-        console.log("Extracted Token:", token);
-        console.log("JWT_SECRET:", process.env.JWT_SECRET);
-
-        // Verify JWT
         const profile_details = jwt.verify(token, process.env.JWT_SECRET);
-
-        console.log("Decoded Payload:", profile_details);
-
         const user = await User.findById(profile_details.id).select("-password");
-
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "User not found"
             });
         }
-
         return res.status(200).json({
             success: true,
             message: "User profile fetched successfully",
             user
         });
-
     } catch (error) {
         console.error("JWT Verification Error:", error);
-
         return res.status(401).json({
             success: false,
             message: error.message

@@ -149,5 +149,20 @@ describe("Registration", () => {
         // Password should never be returned
         expect(profileRes.body.user.password).toBeUndefined();
     });
+    it("should return 401 when accessing profile without token", async () => {
+        const res = await request(app)
+            .get("/user/profile");
 
+        expect(res.statusCode).toBe(401);
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("Authorization header missing");
+    });
+    it("should return 401 when accessing profile with wrong token", async () => {
+        const res = await request(app)
+            .get("/user/profile")
+            .set("Authorization", "Bearer wrongtoken123");
+
+        expect(res.statusCode).toBe(401);
+        expect(res.body.success).toBe(false);
+    });
 });
