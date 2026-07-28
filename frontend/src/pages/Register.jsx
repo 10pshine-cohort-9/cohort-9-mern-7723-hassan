@@ -44,6 +44,8 @@ export default function Register() {
       );
       if (res.data.success) {
         setTimeout(() => navigate("/login/"), 1500);
+      } else {
+        setServerError(res.data.message || 'Unable to create your account. Please try again.');
       }
     } catch (err) {
       setServerError(err.message || 'Unable to create your account. Please try again.')

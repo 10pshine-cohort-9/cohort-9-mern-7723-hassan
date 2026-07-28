@@ -44,6 +44,8 @@ export default function Login() {
       if (res.data.success) {
         localStorage.setItem("accessToken", res.data.token);
         setTimeout(() => navigate("/dashboard/"), 1500);
+      } else {
+        setServerError(res.data.message || 'Unable to sign in. Please try again.');
       }
     } catch (err) {setServerError(err.response?.data?.message || 'Unable to sign in. Please try again.')
     } finally {

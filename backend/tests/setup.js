@@ -3,12 +3,57 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 
 let mongoServer;
 
+function preserveOriginalError(originalError, cleanupError) {
+    if (originalError && typeof originalError === "object") {
+        originalError.cleanupError = cleanupError;
+    }
+}
+
+async function closeDatabaseResources() {
+    let cleanupError;
+
+    try {
+        await mongoose.connection.close();
+    } catch (error) {
+        cleanupError = error;
+    } finally {
+        try {
+            if (mongoServer) {
+                await mongoServer.stop();
+            }
+        } catch (error) {
+            cleanupError ??= error;
+        } finally {
+            mongoServer = undefined;
+        }
+    }
+
+    if (cleanupError) {
+        throw cleanupError;
+    }
+}
+
 beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
+    let setupError;
 
-    const uri = mongoServer.getUri();
+    try {
+        mongoServer = await MongoMemoryServer.create();
 
-    await mongoose.connect(uri);
+        const uri = mongoServer.getUri();
+
+        await mongoose.connect(uri);
+    } catch (error) {
+        setupError = error;
+        throw error;
+    } finally {
+        if (setupError) {
+            try {
+                await closeDatabaseResources();
+            } catch (cleanupError) {
+                preserveOriginalError(setupError, cleanupError);
+            }
+        }
+    }
 });
 
 afterEach(async () => {
@@ -20,7 +65,22 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    await mongoServer.stop();
+    let teardownError;
+
+    try {
+        await mongoose.connection.dropDatabase();
+    } catch (error) {
+        teardownError = error;
+        throw error;
+    } finally {
+        try {
+            await closeDatabaseResources();
+        } catch (cleanupError) {
+            if (teardownError) {
+                preserveOriginalError(teardownError, cleanupError);
+            } else {
+                throw cleanupError;
+            }
+        }
+    }
 });
