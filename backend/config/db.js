@@ -7,7 +7,14 @@ const connectDB = async () => {
         throw new Error("MONGODB_URI is not set. Add it to backend/.env before starting the server.");
     }
 
-    const conn = await mongoose.connect(mongoUri);
+    let conn;
+
+    try {
+        conn = await mongoose.connect(mongoUri);
+    } catch (error) {
+        console.error("MongoDB connection failed:", error.message);
+        throw error;
+    }
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
 };

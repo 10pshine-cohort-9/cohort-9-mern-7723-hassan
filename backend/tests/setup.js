@@ -66,21 +66,28 @@ afterEach(async () => {
 
 afterAll(async () => {
     let teardownError;
+    let cleanupError;
 
     try {
         await mongoose.connection.dropDatabase();
     } catch (error) {
         teardownError = error;
-        throw error;
     } finally {
         try {
             await closeDatabaseResources();
-        } catch (cleanupError) {
+        } catch (error) {
+            cleanupError = error;
             if (teardownError) {
                 preserveOriginalError(teardownError, cleanupError);
-            } else {
-                throw cleanupError;
             }
         }
+    }
+
+    if (teardownError) {
+        throw teardownError;
+    }
+
+    if (cleanupError) {
+        throw cleanupError;
     }
 });
