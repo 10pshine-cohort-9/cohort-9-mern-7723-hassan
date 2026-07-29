@@ -11,9 +11,8 @@ const PORT = process.env.PORT || 3000;
         await connectDB();
 
         const server = app.listen(PORT, () => {
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
-        });
-
+            console.log(` Server running on http://localhost:${PORT}`);
+        });s
         server.on("error", (error) => {
             if (error.code === "EADDRINUSE") {
                 console.error(`Failed to start server: port ${PORT} is already in use.`);

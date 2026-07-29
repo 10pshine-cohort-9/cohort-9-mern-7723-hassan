@@ -109,9 +109,6 @@ router.post("/register", async (req, res) => {
 });
 router.get("/profile", async (req, res) => {
     try {
-        // Log the incoming Authorization header
-        console.log("Authorization Header:", req.headers.authorization);
-
         const authHeader = req.headers.authorization;
 
         if (!authHeader) {
@@ -132,13 +129,8 @@ router.get("/profile", async (req, res) => {
         // Extract token
         const token = authHeader.split(" ")[1];
 
-        console.log("Extracted Token:", token);
-        console.log("JWT_SECRET:", process.env.JWT_SECRET);
-
         // Verify JWT
         const profile_details = jwt.verify(token, process.env.JWT_SECRET);
-
-        console.log("Decoded Payload:", profile_details);
 
         const user = await User.findById(profile_details.id).select("-password");
 
