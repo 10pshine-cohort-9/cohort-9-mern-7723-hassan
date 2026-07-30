@@ -59,6 +59,7 @@ describe("Registration", () => {
                     password: "Password@1"
                 });
 
+
             const res = await request(app)
                 .post("/user/login")
                 .send({
@@ -73,6 +74,7 @@ describe("Registration", () => {
 
     it("should login successfully and return a JWT token", async () => {
         await runTestCase("should login successfully and return a JWT token", async () => {
+
             await request(app)
                 .post("/user/register")
                 .send({
@@ -89,9 +91,13 @@ describe("Registration", () => {
                 });
 
             expect(res.statusCode).toBe(200);
+
             expect(res.body.success).toBe(true);
+
             expect(res.body.message).toBe("User logged in successfully");
+
             expect(res.body.token).toBeDefined();
+
             expect(res.body.user.email).toBe("ahmed@example.com");
             expect(res.body.user.username).toBe("Ahmed");
         });
@@ -125,6 +131,45 @@ describe("Registration", () => {
                 .set("Authorization", `Bearer ${expiredToken}`);
 
             expect(res.statusCode).toBe(401);
+        });
+
+    });
+    it("should return profile without exposing the password", async () => {
+        await runTestCase("should return profile without exposing the password", async () => {
+            // Register a user
+            await request(app)
+                .post("/user/register")
+                .send({
+                    username: "Ahmed",
+                    email: "profile@test.com",
+                    password: "Password@1"
+                });
+
+            // Login to get JWT
+            const loginRes = await request(app)
+                .post("/user/login")
+                .send({
+                    email: "profile@test.com",
+                    password: "Password@1"
+                });
+
+            const token = loginRes.body.token;
+
+            // Fetch profile
+            const profileRes = await request(app)
+                .get("/user/profile")
+                .set("Authorization", `Bearer ${token}`);
+
+            expect(profileRes.statusCode).toBe(200);
+
+            expect(profileRes.body.success).toBe(true);
+
+            expect(profileRes.body.user.email).toBe("profile@test.com");
+
+            expect(profileRes.body.user.username).toBe("Ahmed");
+
+            // Password should never be returned
+            expect(profileRes.body.user.password).toBeUndefined();
         });
     });
 
@@ -175,9 +220,17 @@ describe("Registration", () => {
             const res = await request(app)
                 .get("/user/profile")
                 .set("Authorization", "Bearer wrongtoken123");
+        });
 
+    it("should return 401 when accessing profile with wrong token", async () => {
+        await runTestCase("should return 401 when accessing profile with wrong token", async () => {
+            const res = await request(app)
+                .get("/user/profile")
+                .set("Authorization", "Bearer wrongtoken123");
             expect(res.statusCode).toBe(401);
             expect(res.body.success).toBe(false);
         });
     });
+});
+
 });

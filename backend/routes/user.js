@@ -3,9 +3,10 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const router = Router();
+const logger = require('../pinoPattern/logger');
 
 const saltRounds = 10;
-console.log("User routes loaded");
+logger.info("User routes loaded");
 router.get("/test", (req, res) => {
     res.send("Test route works");
 });
@@ -58,11 +59,10 @@ router.post("/login", async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
-
+        logger.error({ err: error }, "User login failed");
         return res.status(500).json({
             success: false,
-            message: error.message
+            message: "Unable to log in"
         });
     }
 });
@@ -148,7 +148,10 @@ router.get("/profile", async (req, res) => {
         });
 
     } catch (error) {
+
         console.error("JWT Verification Error:", error);
+
+        logger.warn({ err: error }, "JWT verification failed");
 
         return res.status(401).json({
             success: false,
