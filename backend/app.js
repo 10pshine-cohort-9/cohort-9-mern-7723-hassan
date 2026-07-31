@@ -6,6 +6,7 @@ const cors = require("cors");
 const pinoHttp = require("pino-http");
 const userRoutes = require("./routes/user");
 const logger = require('./pinoPattern/logger');
+const fileRoutes= require("./routes/file");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
 
 app.use("/user", userRoutes);
+app.use("/file", fileRoutes)
 
 app.use((req, res) => {
     res.status(404).json({
