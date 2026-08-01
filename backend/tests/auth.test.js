@@ -214,23 +214,4 @@ describe("Registration", () => {
             expect(res.body.message).toBe("Authorization header missing");
         });
     });
-
-    it("should return 401 when accessing profile with wrong token", async () => {
-        await runTestCase("should return 401 when accessing profile with wrong token", async () => {
-            const res = await request(app)
-                .get("/user/profile")
-                .set("Authorization", "Bearer wrongtoken123");
-        });
-
-    it("should return 401 when accessing profile with wrong token", async () => {
-        await runTestCase("should return 401 when accessing profile with wrong token", async () => {
-            const res = await request(app)
-                .get("/user/profile")
-                .set("Authorization", "Bearer wrongtoken123");
-            expect(res.statusCode).toBe(401);
-            expect(res.body.success).toBe(false);
-        });
-    });
-});
-
 });

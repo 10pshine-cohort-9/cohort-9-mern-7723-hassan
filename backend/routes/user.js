@@ -145,9 +145,6 @@ router.get("/profile", async (req, res) => {
         });
 
     } catch (error) {
-
-        console.error("JWT Verification Error:", error);
-
         logger.warn({ err: error }, "JWT verification failed");
 
         return res.status(401).json({

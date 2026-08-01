@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import axios from "axios";
+import DOMPurify from "dompurify";
 
 const Notepad = ({ saveTrigger, content, setContent }) => {
   const editorRef = useRef(null);
@@ -7,11 +8,13 @@ const Notepad = ({ saveTrigger, content, setContent }) => {
 
   // Keep editor synced when content is loaded from Sidebar
   useEffect(() => {
+    const sanitizedContent = DOMPurify.sanitize(content || "");
+
     if (
       editorRef.current &&
-      editorRef.current.innerHTML !== (content || "")
+      editorRef.current.innerHTML !== sanitizedContent
     ) {
-      editorRef.current.innerHTML = content || "";
+      editorRef.current.innerHTML = sanitizedContent;
     }
   }, [content]);
 

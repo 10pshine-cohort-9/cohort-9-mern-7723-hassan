@@ -3,34 +3,38 @@ const fs = require("fs");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 
-const User = require("../models/User");
-const File = require("../models/File");
+const User = require("../models/user");
+const File = require("../models/file");
 
 const router = express.Router();
 
 async function saveFileRecord(userId, finalName, relativePath) {
-    const absolutePath = path.join(__dirname, "..", relativePath);
-    const stats = fs.statSync(absolutePath);
+    try {
+        const absolutePath = path.join(__dirname, "..", relativePath);
+        const stats = fs.statSync(absolutePath);
 
-    await File.findOneAndUpdate(
-        {
-            user: userId,
-            name: finalName,
-        },
-        {
-            user: userId,
-            name: finalName,
-            fileName: `${finalName}.txt`,
-            filePath: relativePath,
-            extension: "txt",
-            size: stats.size,
-        },
-        {
-            upsert: true,
-            new: true,
-            runValidators: true,
-        }
-    );
+        await File.findOneAndUpdate(
+            {
+                user: userId,
+                name: finalName,
+            },
+            {
+                user: userId,
+                name: finalName,
+                fileName: `${finalName}.txt`,
+                filePath: relativePath,
+                extension: "txt",
+                size: stats.size,
+            },
+            {
+                upsert: true,
+                new: true,
+                runValidators: true,
+            }
+        );
+    } catch (error) {
+        throw new Error(`Failed to save file record: ${error.message}`);
+    }
 }
 
 router.post("/save", async (req, res) => {
@@ -274,6 +278,13 @@ router.get("/:id", async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: "User not found",
+            });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid file ID",
             });
         }
 
