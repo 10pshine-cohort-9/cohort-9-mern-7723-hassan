@@ -103,9 +103,6 @@ router.post("/save", async (req, res) => {
             relativePath
         );
 
-        // ==========================
-        // File already exists
-        // ==========================
         if (fs.existsSync(absolutePath)) {
 
             if (!action) {
@@ -117,7 +114,6 @@ router.post("/save", async (req, res) => {
                 });
             }
 
-            // Overwrite
             if (action === "overwrite") {
 
                 fs.writeFileSync(
@@ -137,8 +133,6 @@ router.post("/save", async (req, res) => {
                     message: "File overwritten successfully."
                 });
             }
-
-            // Rename
             if (action === "rename") {
 
                 if (!newName) {
@@ -194,9 +188,6 @@ router.post("/save", async (req, res) => {
             });
         }
 
-        // ==========================
-        // New File
-        // ==========================
         fs.writeFileSync(
             absolutePath,
             text,

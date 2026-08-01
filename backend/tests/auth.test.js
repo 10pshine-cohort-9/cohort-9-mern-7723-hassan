@@ -136,7 +136,7 @@ describe("Registration", () => {
     });
     it("should return profile without exposing the password", async () => {
         await runTestCase("should return profile without exposing the password", async () => {
-            // Register a user
+            // Register
             await request(app)
                 .post("/user/register")
                 .send({
@@ -145,7 +145,7 @@ describe("Registration", () => {
                     password: "Password@1"
                 });
 
-            // Login to get JWT
+            // Login and JWT
             const loginRes = await request(app)
                 .post("/user/login")
                 .send({
@@ -155,7 +155,7 @@ describe("Registration", () => {
 
             const token = loginRes.body.token;
 
-            // Fetch profile
+            // Get the profile
             const profileRes = await request(app)
                 .get("/user/profile")
                 .set("Authorization", `Bearer ${token}`);
@@ -168,7 +168,7 @@ describe("Registration", () => {
 
             expect(profileRes.body.user.username).toBe("Ahmed");
 
-            // Password should never be returned
+            // No Password should be there
             expect(profileRes.body.user.password).toBeUndefined();
         });
     });

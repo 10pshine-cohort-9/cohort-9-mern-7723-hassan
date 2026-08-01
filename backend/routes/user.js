@@ -118,7 +118,6 @@ router.get("/profile", async (req, res) => {
             });
         }
 
-        // Check Bearer format
         if (!authHeader.startsWith("Bearer ")) {
             return res.status(401).json({
                 success: false,
@@ -126,10 +125,8 @@ router.get("/profile", async (req, res) => {
             });
         }
 
-        // Extract token
         const token = authHeader.split(" ")[1];
 
-        // Verify JWT
         const profile_details = jwt.verify(token, process.env.JWT_SECRET);
 
         const user = await User.findById(profile_details.id).select("-password");
