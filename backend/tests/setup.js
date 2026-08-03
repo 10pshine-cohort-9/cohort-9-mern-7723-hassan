@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 
-jest.setTimeout(120000);
-
 let mongoServer;
 
 function preserveOriginalError(originalError, cleanupError) {

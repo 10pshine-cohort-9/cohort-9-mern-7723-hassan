@@ -50,7 +50,7 @@ describe("Note save persistence", () => {
         jest.spyOn(Note, "findOne").mockResolvedValueOnce(existingNote);
 
         const res = await request(app)
-            .post("/notes/save")
+            .post("/note/save")
             .set("Authorization", `Bearer ${token}`)
             .send({
                 name: "notes",
@@ -71,7 +71,7 @@ describe("Note save persistence", () => {
         );
 
         const res = await request(app)
-            .post("/notes/save")
+            .post("/note/save")
             .set("Authorization", `Bearer ${token}`)
             .send({
                 name: "new-file",
