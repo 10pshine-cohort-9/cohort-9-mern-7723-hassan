@@ -12,13 +12,13 @@ const PORT = process.env.PORT || 3000;
         await connectDB();
 
         const server = app.listen(PORT, () => {
-            console.log(` Server running on http://localhost:${PORT}`);
+            logger.info({ port: PORT }, "Server started");
         });
         server.on("error", (error) => {
             if (error.code === "EADDRINUSE") {
-                console.error(`Failed to start server: port ${PORT} is already in use.`);
+                logger.error({ err: error, port: PORT }, "Failed to start server: port is already in use");
             } else {
-                console.error("Failed to start server:", error);
+                logger.error({ err: error, port: PORT }, "Failed to start server");
             }
             logger.info({ port: PORT }, "Server started");
         });
@@ -27,12 +27,13 @@ const PORT = process.env.PORT || 3000;
             if (error.code === "EADDRINUSE") {
                 logger.error({ err: error, port: PORT }, "Server port is already in use");
             } else {
-                logger.error({ err: error }, "Failed to start server");s
+                logger.error({ err: error, port: PORT }, "Failed to start server");
             }
             process.exit(1);
         });
     } catch (error) {
-        logger.error({ err: error }, "Failed to start server");
+        logger.error({ err: error, port: PORT }, "Failed to start server");
         process.exit(1);
     }
 })();
+s

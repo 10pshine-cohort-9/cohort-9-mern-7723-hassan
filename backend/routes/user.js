@@ -145,11 +145,11 @@ router.get("/profile", async (req, res) => {
         });
 
     } catch (error) {
+        logger.error({ err: error }, "User login failed");
         logger.warn({ err: error }, "JWT verification failed");
-
         return res.status(401).json({
             success: false,
-            message: error.message
+            message: "Invalid or expired token"
         });
     }
 });

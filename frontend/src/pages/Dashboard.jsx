@@ -25,7 +25,23 @@ const Dashboard = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleNew = () => console.log("New clicked");
+  const handleNew = () => setContent("");
+
+  const handleExport = () => {
+    if (!content) return;
+
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "note.txt";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleSettings = () => {
+    console.log("Settings clicked");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -61,7 +77,10 @@ const Dashboard = () => {
         `}
       >
         <Sidebar
+          onNew={handleNew}
           onSave={() => setSaveTrigger((prev) => prev + 1)}
+          onExport={handleExport}
+          onSettings={handleSettings}
           setContent={setContent}
         />
       </div>

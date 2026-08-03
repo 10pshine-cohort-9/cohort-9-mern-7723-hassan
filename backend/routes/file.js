@@ -2,11 +2,24 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 const User = require("../models/user");
 const File = require("../models/file");
 
 const router = express.Router();
+
+function ensureWithinSavedRoot(rootDir, candidatePath) {
+    const resolvedRoot = path.resolve(rootDir);
+    const resolvedPath = path.resolve(candidatePath);
+    const relativePath = path.relative(resolvedRoot, resolvedPath);
+
+    if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+        throw new Error("Resolved path escapes the saved root.");
+    }
+
+    return resolvedPath;
+}
 
 async function saveFileRecord(userId, finalName, relativePath) {
     try {
@@ -57,7 +70,9 @@ router.post("/save", async (req, res) => {
 
         const token = authHeader.split(" ")[1];
 
-        const profile = jwt.verify(token, process.env.JWT_SECRET);
+        const profile = jwt.verify(token, process.env.JWT_SECRET, {
+            algorithms: ["HS256"],
+        });
 
         const user = await User.findById(profile.id).select("-password");
 
@@ -82,13 +97,15 @@ router.post("/save", async (req, res) => {
             });
         }
 
-        const username = user.username.replace(/[<>:"/\\|?*]/g, "_");
+        const safeUsername = String(user.username || "")
+            .trim()
+            .replace(/[^a-zA-Z0-9_-]/g, "_")
+            .replace(/^_+|_+$/g, "") || `user-${user._id.toString()}`;
 
-        const userFolder = path.join(
-            __dirname,
-            "..",
-            "saved",
-            username
+        const savedRoot = path.resolve(__dirname, "..", "saved");
+        const userFolder = ensureWithinSavedRoot(
+            savedRoot,
+            path.join(savedRoot, safeUsername)
         );
 
         fs.mkdirSync(userFolder, { recursive: true });
@@ -97,14 +114,13 @@ router.post("/save", async (req, res) => {
 
         let relativePath = path.join(
             "saved",
-            username,
+            safeUsername,
             `${finalName}.txt`
         );
 
-        let absolutePath = path.join(
-            __dirname,
-            "..",
-            relativePath
+        let absolutePath = ensureWithinSavedRoot(
+            savedRoot,
+            path.join(__dirname, "..", relativePath)
         );
 
         if (fs.existsSync(absolutePath)) {
@@ -150,14 +166,13 @@ router.post("/save", async (req, res) => {
 
                 relativePath = path.join(
                     "saved",
-                    username,
+                    safeUsername,
                     `${finalName}.txt`
                 );
 
-                absolutePath = path.join(
-                    __dirname,
-                    "..",
-                    relativePath
+                absolutePath = ensureWithinSavedRoot(
+                    savedRoot,
+                    path.join(__dirname, "..", relativePath)
                 );
 
                 if (fs.existsSync(absolutePath)) {
@@ -209,13 +224,26 @@ router.post("/save", async (req, res) => {
             message: "File saved successfully."
         });
 
-    } catch (error) {
-        console.error(error);
+    }  catch (error) {
 
-        return res.status(500).json({
+    if (error.name === "TokenExpiredError") {
+        return res.status(401).json({
             success: false,
-            message: error.message,
+            message: "Token has expired",
         });
+    }
+
+    if (error.name === "JsonWebTokenError") {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid token",
+        });
+    }
+
+    return res.status(500).json({
+        success: false,
+        message: error.message,
+    });
     }
 });
 router.get("/files", async (req, res) => {
@@ -230,7 +258,9 @@ router.get("/files", async (req, res) => {
         }
 
         const token = authHeader.split(" ")[1];
-        const profile = jwt.verify(token, process.env.JWT_SECRET);
+        const profile = jwt.verify(token, process.env.JWT_SECRET, {
+            algorithms: ["HS256"],
+        });
 
         const user = await User.findById(profile.id);
 
@@ -250,12 +280,27 @@ router.get("/files", async (req, res) => {
             files,
         });
 
-    } catch (error) {
-        return res.status(500).json({
+   } catch (error) {
+
+    if (error.name === "TokenExpiredError") {
+        return res.status(401).json({
             success: false,
-            message: error.message,
+            message: "Token has expired",
         });
     }
+
+    if (error.name === "JsonWebTokenError") {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid token",
+        });
+    }
+
+    return res.status(500).json({
+        success: false,
+        message: error.message,
+    });
+}
 });
 router.get("/:id", async (req, res) => {
     try {
@@ -270,9 +315,11 @@ router.get("/:id", async (req, res) => {
         }
 
         const token = authHeader.split(" ")[1];
-        const profile = jwt.verify(token, process.env.JWT_SECRET);
+        const profile = jwt.verify(token, process.env.JWT_SECRET, {
+            algorithms: ["HS256"],
+        });
 
-        const user = await User.findById(profile.id);
+       const user = await User.findById(profile.id).select("-password");
 
         if (!user) {
             return res.status(404).json({
@@ -332,11 +379,26 @@ router.get("/:id", async (req, res) => {
         });
 
     } catch (error) {
-        return res.status(500).json({
+
+    if (error.name === "TokenExpiredError") {
+        return res.status(401).json({
             success: false,
-            message: error.message,
+            message: "Token has expired",
         });
     }
+
+    if (error.name === "JsonWebTokenError") {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid token",
+        });
+    }
+
+    return res.status(500).json({
+        success: false,
+        message: error.message,
+    });
+}
 });
 
 module.exports = router;
