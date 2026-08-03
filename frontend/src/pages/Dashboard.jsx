@@ -40,7 +40,7 @@ const Dashboard = () => {
   };
 
   const handleSettings = () => {
-    console.log("Settings clicked");
+    //console.log("Settings clicked");
   };
 
   return (

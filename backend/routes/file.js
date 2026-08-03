@@ -1,5 +1,6 @@
 const express = require("express");
 const fs = require("fs");
+const fsp = fs.promises;
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -21,10 +22,9 @@ function ensureWithinSavedRoot(rootDir, candidatePath) {
     return resolvedPath;
 }
 
-async function saveFileRecord(userId, finalName, relativePath) {
+async function saveFileRecord(userId, finalName, relativePath, sourcePath) {
     try {
-        const absolutePath = path.join(__dirname, "..", relativePath);
-        const stats = fs.statSync(absolutePath);
+        const stats = await fsp.stat(sourcePath);
 
         await File.findOneAndUpdate(
             {
@@ -47,6 +47,36 @@ async function saveFileRecord(userId, finalName, relativePath) {
         );
     } catch (error) {
         throw new Error(`Failed to save file record: ${error.message}`);
+    }
+}
+
+async function fileExists(filePath) {
+    try {
+        await fsp.access(filePath);
+        return true;
+    } catch (error) {
+        if (error.code === "ENOENT") {
+            return false;
+        }
+        throw error;
+    }
+}
+
+async function saveAndPublishFile(userId, finalName, relativePath, absolutePath, text) {
+    const temporaryPath = `${absolutePath}.tmp`;
+
+    try {
+        await fsp.writeFile(temporaryPath, text, "utf8");
+        await saveFileRecord(userId, finalName, relativePath, temporaryPath);
+        await fsp.rename(temporaryPath, absolutePath);
+    } finally {
+        try {
+            await fsp.unlink(temporaryPath);
+        } catch (error) {
+            if (error.code !== "ENOENT") {
+                throw error;
+            }
+        }
     }
 }
 
@@ -108,7 +138,7 @@ router.post("/save", async (req, res) => {
             path.join(savedRoot, safeUsername)
         );
 
-        fs.mkdirSync(userFolder, { recursive: true });
+        await fsp.mkdir(userFolder, { recursive: true });
 
         let finalName = name.replace(/[<>:"/\\|?*]/g, "_");
 
@@ -123,7 +153,7 @@ router.post("/save", async (req, res) => {
             path.join(__dirname, "..", relativePath)
         );
 
-        if (fs.existsSync(absolutePath)) {
+        if (await fileExists(absolutePath)) {
 
             if (!action) {
                 return res.status(409).json({
@@ -136,16 +166,12 @@ router.post("/save", async (req, res) => {
 
             if (action === "overwrite") {
 
-                fs.writeFileSync(
-                    absolutePath,
-                    text,
-                    "utf8"
-                );
-
-                await saveFileRecord(
+                await saveAndPublishFile(
                     user._id,
                     finalName,
-                    relativePath
+                    relativePath,
+                    absolutePath,
+                    text
                 );
 
                 return res.status(200).json({
@@ -175,7 +201,7 @@ router.post("/save", async (req, res) => {
                     path.join(__dirname, "..", relativePath)
                 );
 
-                if (fs.existsSync(absolutePath)) {
+                if (await fileExists(absolutePath)) {
                     return res.status(409).json({
                         success: false,
                         requiresAction: true,
@@ -183,16 +209,12 @@ router.post("/save", async (req, res) => {
                     });
                 }
 
-                fs.writeFileSync(
-                    absolutePath,
-                    text,
-                    "utf8"
-                );
-
-                await saveFileRecord(
+                await saveAndPublishFile(
                     user._id,
                     finalName,
-                    relativePath
+                    relativePath,
+                    absolutePath,
+                    text
                 );
 
                 return res.status(200).json({
@@ -207,16 +229,12 @@ router.post("/save", async (req, res) => {
             });
         }
 
-        fs.writeFileSync(
-            absolutePath,
-            text,
-            "utf8"
-        );
-
-        await saveFileRecord(
+        await saveAndPublishFile(
             user._id,
             finalName,
-            relativePath
+            relativePath,
+            absolutePath,
+            text
         );
 
         return res.status(200).json({
@@ -353,14 +371,14 @@ router.get("/:id", async (req, res) => {
             file.filePath
         );
 
-        if (!fs.existsSync(absolutePath)) {
+        if (!await fileExists(absolutePath)) {
             return res.status(404).json({
                 success: false,
                 message: "Physical file not found",
             });
         }
 
-        const content = fs.readFileSync(
+        const content = await fsp.readFile(
             absolutePath,
             "utf8"
         );

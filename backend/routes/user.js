@@ -127,9 +127,27 @@ router.get("/profile", async (req, res) => {
 
         const token = authHeader.split(" ")[1];
 
-        const profile_details = jwt.verify(token, process.env.JWT_SECRET);
+        let profileDetails;
+        try {
+            profileDetails = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            logger.warn({ err: error }, "JWT verification failed");
+            return res.status(401).json({
+                success: false,
+                message: "Invalid or expired token"
+            });
+        }
 
-        const user = await User.findById(profile_details.id).select("-password");
+        let user;
+        try {
+            user = await User.findById(profileDetails.id).select("-password");
+        } catch (error) {
+            logger.error({ err: error }, "Failed to fetch user profile");
+            return res.status(500).json({
+                success: false,
+                message: "Unable to fetch user profile"
+            });
+        }
 
         if (!user) {
             return res.status(404).json({
@@ -145,11 +163,10 @@ router.get("/profile", async (req, res) => {
         });
 
     } catch (error) {
-        logger.error({ err: error }, "User login failed");
-        logger.warn({ err: error }, "JWT verification failed");
-        return res.status(401).json({
+        logger.error({ err: error }, "User profile request failed");
+        return res.status(500).json({
             success: false,
-            message: "Invalid or expired token"
+            message: "Unable to fetch user profile"
         });
     }
 });

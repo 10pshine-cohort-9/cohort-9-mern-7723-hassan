@@ -16,15 +16,6 @@ const PORT = process.env.PORT || 3000;
         });
         server.on("error", (error) => {
             if (error.code === "EADDRINUSE") {
-                logger.error({ err: error, port: PORT }, "Failed to start server: port is already in use");
-            } else {
-                logger.error({ err: error, port: PORT }, "Failed to start server");
-            }
-            logger.info({ port: PORT }, "Server started");
-        });
-
-        server.on("error", (error) => {
-            if (error.code === "EADDRINUSE") {
                 logger.error({ err: error, port: PORT }, "Server port is already in use");
             } else {
                 logger.error({ err: error, port: PORT }, "Failed to start server");
@@ -36,4 +27,3 @@ const PORT = process.env.PORT || 3000;
         process.exit(1);
     }
 })();
-s
