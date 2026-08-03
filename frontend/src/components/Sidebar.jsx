@@ -8,6 +8,7 @@ const Sidebar = ({
   onExport,
   onSettings,
   setContent,
+  refreshTrigger,
 }) => {
   
   const accessToken = localStorage.getItem("accessToken");
@@ -21,7 +22,7 @@ const Sidebar = ({
   const handleOpenFile = async (id) => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/file/${id}`,
+        `${import.meta.env.VITE_API_URL}/note/${id}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -60,7 +61,7 @@ const Sidebar = ({
   const fetchFiles = async () => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/file/files`,
+        `${import.meta.env.VITE_API_URL}/note/files`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -82,6 +83,12 @@ const Sidebar = ({
     fetchProfile();
     fetchFiles();
   }, [accessToken]);
+
+  useEffect(() => {
+    if (!accessToken || refreshTrigger === 0) return;
+
+    fetchFiles();
+  }, [accessToken, refreshTrigger]);
 
   return (
     <div className="h-full flex flex-col justify-between bg-slate-800 text-gray-200 p-4 mt-6">

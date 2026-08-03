@@ -7,6 +7,7 @@ const Dashboard = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [saveTrigger, setSaveTrigger] = useState(0);
   const [content, setContent] = useState("");
+  const [fileCreated, setFileCreated] = useState(0);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -99,6 +100,7 @@ const Dashboard = () => {
             saveTrigger={saveTrigger}
             content={content}
             setContent={setContent}
+            onFileCreated={() => setFileCreated((prev) => prev + 1)}
           />
         </div>
       </main>

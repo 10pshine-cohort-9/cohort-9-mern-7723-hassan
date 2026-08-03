@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import axios from "axios";
 import DOMPurify from "dompurify";
 
-const Notepad = ({ saveTrigger, content, setContent }) => {
+const Notepad = ({ saveTrigger, content, setContent, onFileCreated }) => {
   const editorRef = useRef(null);
   const accessToken = localStorage.getItem("accessToken");
 
@@ -60,7 +60,7 @@ const Notepad = ({ saveTrigger, content, setContent }) => {
   ) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/file/save`,
+        `${import.meta.env.VITE_API_URL}/note/save`,
         {
           name,
           text,
@@ -75,6 +75,7 @@ const Notepad = ({ saveTrigger, content, setContent }) => {
       );
 
       alert(response.data.message);
+      onFileCreated?.();
     } catch (err) {
       if (
         err.response &&
