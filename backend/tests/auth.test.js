@@ -137,14 +137,25 @@ describe("Registration", () => {
 
     });
     it("returns 500 when the profile lookup fails", async () => {
-        const token = jwt.sign(
-            { id: "507f1f77bcf86cd799439011", email: "profile@test.com" },
-            process.env.JWT_SECRET
-        );
+    await runTestCase("returns 500 when the profile lookup fails", async () => {
+        const payload = {
+            id: "507f1f77bcf86cd799439011",
+            email: "profile@test.com",
+        };
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET);
+
         const error = new Error("database unavailable");
+
         const select = jest.fn().mockRejectedValueOnce(error);
-        const errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
-        jest.spyOn(User, "findById").mockReturnValueOnce({ select });
+
+        const errorSpy = jest
+            .spyOn(logger, "error")
+            .mockImplementation(() => {});
+
+        jest.spyOn(User, "findById").mockReturnValueOnce({
+            select,
+        });
 
         const res = await request(app)
             .get("/user/profile")
@@ -152,8 +163,12 @@ describe("Registration", () => {
 
         expect(res.statusCode).toBe(500);
         expect(res.body.message).toBe("Unable to fetch user profile");
-        expect(errorSpy).toHaveBeenCalledWith({ err: error }, "Failed to fetch user profile");
+        expect(errorSpy).toHaveBeenCalledWith(
+            { err: error },
+            "Failed to fetch user profile"
+        );
     });
+});
     it("should return profile without exposing the password", async () => {
         await runTestCase("should return profile without exposing the password", async () => {
             // Register
