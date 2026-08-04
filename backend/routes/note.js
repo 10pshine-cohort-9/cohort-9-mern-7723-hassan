@@ -303,5 +303,77 @@ router.get("/:id", async (req, res) => {
         });
     }
 });
+router.delete("/:id", async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
 
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized",
+            });
+        }
+
+        const token = authHeader.split(" ")[1];
+
+        const profile = jwt.verify(token, process.env.JWT_SECRET, {
+            algorithms: ["HS256"],
+        });
+
+        const user = await User.findById(profile.id).select("-password");
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid file ID",
+            });
+        }
+
+        const note = await Note.findOne({
+            _id: req.params.id,
+            user: user._id,
+        });
+
+        if (!note) {
+            return res.status(404).json({
+                success: false,
+                message: "File not found",
+            });
+        }
+
+        await note.deleteOne();
+
+        return res.status(200).json({
+            success: true,
+            message: "File deleted successfully",
+        });
+
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                success: false,
+                message: "Token has expired",
+            });
+        }
+
+        if (error.name === "JsonWebTokenError") {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid token",
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+});
 module.exports = router;

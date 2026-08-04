@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import AvailableNotes from "./AvailableNotes";
+import {API_URL} from "../config";
 const Sidebar = ({
   onNew,
   onSave,
@@ -9,8 +10,9 @@ const Sidebar = ({
   onSettings,
   setContent,
   refreshTrigger,
+  currentFile,
 }) => {
-  
+
   const accessToken = localStorage.getItem("accessToken");
   const [profile, setProfile] = useState(null);
   const [filesList, setFilesList] = useState([]);
@@ -22,7 +24,7 @@ const Sidebar = ({
   const handleOpenFile = async (id) => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/note/${id}`,
+        `${API_URL}/note/${id}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -32,6 +34,7 @@ const Sidebar = ({
 
       if (res.data.success) {
         setContent(res.data.file.content);
+        onOpen?.(res.data.file);
         setAvl(false);
       }
     } catch (error) {
@@ -39,10 +42,34 @@ const Sidebar = ({
       alert("Failed to open file");
     }
   };
+  const handleDeleteFile = async (id) => {
+    if (id === currentFile.id) {
+      alert("Close the current file before deleting it.");
+      return;
+    }
+    try {
+      const res = await axios.delete(
+        `${API_URL}/note/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (res.data.success) {
+        fetchFiles();
+        setAvl(false);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete file");
+    }
+  };
   const fetchProfile = async () => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/user/profile`,
+        `${API_URL}/user/profile`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -61,7 +88,7 @@ const Sidebar = ({
   const fetchFiles = async () => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/note/files`,
+        `${API_URL}/note/files`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -114,6 +141,8 @@ const Sidebar = ({
               <AvailableNotes
                 filesList={filesList}
                 onOpenFile={handleOpenFile}
+                onDeleteFile={handleDeleteFile}
+                currentFileId={currentFile.id}
               />
             </div>
           )}

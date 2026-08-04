@@ -8,6 +8,7 @@ const Dashboard = () => {
   const [saveTrigger, setSaveTrigger] = useState(0);
   const [content, setContent] = useState("");
   const [fileCreated, setFileCreated] = useState(0);
+  const [currentFile, setCurrentFile] = useState({ id: null, name: null });
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -26,17 +27,46 @@ const Dashboard = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleNew = () => setContent("");
+  const handleNew = () => {
+    setContent("");
+    setCurrentFile({ id: null, name: null });
+  };
+
+  const handleFileOpen = (file) => {
+    setContent(file.content);
+    setCurrentFile({ id: file._id, name: file.name });
+  };
 
   const handleExport = () => {
-    if (!content) return;
+    if (!content) {
+      alert("No content available to export");
+      return;
+    }
 
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    if (!currentFile.name) {
+      alert("Please open a file before exporting");
+      return;
+    }
+
+    const fileName = currentFile.name.endsWith(".txt")
+      ? currentFile.name
+      : `${currentFile.name}.txt`;
+
+    const blob = new Blob(
+      [content.replace(/<[^>]+>/g, "")],
+      { type: "text/plain;charset=utf-8" }
+    );
+
     const url = URL.createObjectURL(blob);
+
     const link = document.createElement("a");
     link.href = url;
-    link.download = "note.txt";
+    link.download = fileName;
+
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
+
     URL.revokeObjectURL(url);
   };
 
@@ -79,10 +109,13 @@ const Dashboard = () => {
       >
         <Sidebar
           onNew={handleNew}
+          onOpen={handleFileOpen}
           onSave={() => setSaveTrigger((prev) => prev + 1)}
           onExport={handleExport}
           onSettings={handleSettings}
           setContent={setContent}
+          refreshTrigger={fileCreated}
+          currentFile={currentFile}
         />
       </div>
 
@@ -100,7 +133,13 @@ const Dashboard = () => {
             saveTrigger={saveTrigger}
             content={content}
             setContent={setContent}
-            onFileCreated={() => setFileCreated((prev) => prev + 1)}
+            currentFileName={currentFile.name}
+            onFileCreated={(name) => {
+              if (name) {
+                setCurrentFile((prev) => ({ ...prev, name }));
+              }
+              setFileCreated((prev) => prev + 1);
+            }}
           />
         </div>
       </main>

@@ -36,11 +36,7 @@ export default function Login() {
     setSubmitting(true)
     setServerError('')
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/login`,
-        form,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const res = await loginUser(form);
       if (res.data.success) {
         localStorage.setItem("accessToken", res.data.token);
         setTimeout(() => navigate("/dashboard/"), 1500);
