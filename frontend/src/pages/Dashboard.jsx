@@ -52,10 +52,11 @@ const Dashboard = () => {
       ? currentFile.name
       : `${currentFile.name}.txt`;
 
-    const blob = new Blob(
-      [content.replace(/<[^>]+>/g, "")],
-      { type: "text/plain;charset=utf-8" }
-    );
+    const exportedText = new DOMParser().parseFromString(
+      content,
+      "text/html"
+    ).body.textContent;
+    const blob = new Blob([exportedText], { type: "text/plain;charset=utf-8" });
 
     const url = URL.createObjectURL(blob);
 
@@ -134,9 +135,13 @@ const Dashboard = () => {
             content={content}
             setContent={setContent}
             currentFileName={currentFile.name}
-            onFileCreated={(name) => {
-              if (name) {
-                setCurrentFile((prev) => ({ ...prev, name }));
+            onFileCreated={(savedNote) => {
+              if (savedNote) {
+                setCurrentFile((prev) => ({
+                  ...prev,
+                  id: savedNote._id ?? prev.id,
+                  name: savedNote.name ?? prev.name,
+                }));
               }
               setFileCreated((prev) => prev + 1);
             }}

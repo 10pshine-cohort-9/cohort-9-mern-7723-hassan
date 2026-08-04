@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordInput from '../components/PasswordInput.jsx'
 import { loginUser } from '../api/auth.js'
-import axios from 'axios'
 import { validateEmail, validateLoginPassword } from '../utils/validation.js'
 
 export default function Login() {

@@ -1,5 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import AvailableNotes from "../components/AvailableNotes";
 
 describe("AvailableNotes", () => {
@@ -47,6 +48,26 @@ describe("AvailableNotes", () => {
     );
 
     fireEvent.click(screen.getByText("First Note"));
+
+    expect(onOpenFile).toHaveBeenCalledTimes(1);
+    expect(onOpenFile).toHaveBeenCalledWith("1");
+  });
+
+  test("calls onOpenFile when a note is activated with the keyboard", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AvailableNotes
+        filesList={files}
+        onOpenFile={onOpenFile}
+        onDeleteFile={onDeleteFile}
+        currentFileId={null}
+      />
+    );
+
+    const firstNoteButton = screen.getByRole("button", { name: "First Note" });
+    firstNoteButton.focus();
+    await user.keyboard("{Enter}");
 
     expect(onOpenFile).toHaveBeenCalledTimes(1);
     expect(onOpenFile).toHaveBeenCalledWith("1");

@@ -12,7 +12,10 @@ const AvailableNotes = ({
       {filesList.map((file) => (
         <div
           key={file._id}
+          role="button"
+          tabIndex={0}
           onClick={() => onOpenFile(file._id)}
+          onKeyDown={(event) => event.key === "Enter" && onOpenFile(file._id)}
           className="flex items-center justify-between px-3 py-2 border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
         >
           <span className="flex-1 text-sm text-gray-700 truncate">

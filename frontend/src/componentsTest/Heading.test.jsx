@@ -22,7 +22,8 @@ describe("Heading", () => {
   test("calls toggleSidebar when menu button is clicked", async () => {
     const toggleSidebar = jest.fn();
 
-    render(
+    try {
+      render(
       <Heading
         isOpen={false}
         toggleSidebar={toggleSidebar}
@@ -35,7 +36,13 @@ describe("Heading", () => {
       })
     );
 
-    expect(toggleSidebar).toHaveBeenCalledTimes(1);
+      expect(toggleSidebar).toHaveBeenCalledTimes(1);
+    } catch (error) {
+      throw new Error(
+        "Heading: calls toggleSidebar when menu button is clicked failed",
+        { cause: error }
+      );
+    }
   });
 
   test("shows 'Open sidebar' when sidebar is closed", () => {

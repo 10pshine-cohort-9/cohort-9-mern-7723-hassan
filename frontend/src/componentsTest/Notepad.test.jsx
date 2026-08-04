@@ -43,7 +43,8 @@ describe("Notepad", () => {
   test("updates content when user types", async () => {
     const setContent = jest.fn();
 
-    render(
+    try {
+      render(
       <Notepad
         saveTrigger={0}
         content=""
@@ -67,7 +68,12 @@ describe("Notepad", () => {
     );
 
 
-    expect(setContent).toHaveBeenCalled();
+      expect(setContent).toHaveBeenCalled();
+    } catch (error) {
+      throw new Error("Notepad: updates content when user types failed", {
+        cause: error,
+      });
+    }
   });
 
 
@@ -87,7 +93,8 @@ describe("Notepad", () => {
     const onFileCreated = jest.fn();
 
 
-    const { rerender } = render(
+    try {
+      const { rerender } = render(
       <Notepad
         saveTrigger={0}
         content="Hello World"
@@ -133,12 +140,64 @@ describe("Notepad", () => {
       );
 
 
-    expect(onFileCreated)
+      expect(onFileCreated)
       .toHaveBeenCalledWith(
-        "My New Note"
+        { _id: null, name: "My New Note" }
       );
+    } catch (error) {
+      throw new Error("Notepad: saves new file when save trigger changes failed", {
+        cause: error,
+      });
+    }
   });
 
+
+  test("uses the server-returned note identity after rename and save", async () => {
+    axios.post.mockResolvedValue({
+      data: {
+        message: "File saved with new name.",
+        note: {
+          _id: "saved-note-123",
+          name: "Renamed Note",
+        },
+      },
+    });
+
+    const onFileCreated = jest.fn();
+    try {
+      const { rerender } = render(
+      <Notepad
+        saveTrigger={0}
+        content="Existing Note"
+        setContent={jest.fn()}
+        onFileCreated={onFileCreated}
+        currentFileName="Old Name"
+      />
+    );
+
+    rerender(
+      <Notepad
+        saveTrigger={1}
+        content="Existing Note"
+        setContent={jest.fn()}
+        onFileCreated={onFileCreated}
+        currentFileName="Old Name"
+      />
+    );
+
+      await waitFor(() => {
+      expect(onFileCreated).toHaveBeenCalledWith({
+        _id: "saved-note-123",
+        name: "Renamed Note",
+      });
+      });
+    } catch (error) {
+      throw new Error(
+        "Notepad: uses the server-returned note identity after rename and save failed",
+        { cause: error }
+      );
+    }
+  });
 
   test("shows Edit button when opening existing file", () => {
     render(
@@ -161,7 +220,8 @@ describe("Notepad", () => {
 
 
   test("enables editing after clicking Edit button", async () => {
-    render(
+    try {
+      render(
       <Notepad
         saveTrigger={0}
         content="Existing Note"
@@ -184,11 +244,16 @@ describe("Notepad", () => {
     );
 
 
-    expect(editor)
+      expect(editor)
       .toHaveAttribute(
         "contenteditable",
         "true"
       );
+    } catch (error) {
+      throw new Error("Notepad: enables editing after clicking Edit button failed", {
+        cause: error,
+      });
+    }
   });
 
 
@@ -217,7 +282,8 @@ describe("Notepad", () => {
     window.confirm.mockReturnValue(true);
 
 
-    const { rerender } = render(
+    try {
+      const { rerender } = render(
       <Notepad
         saveTrigger={0}
         content="Duplicate content"
@@ -245,7 +311,13 @@ describe("Notepad", () => {
     });
 
 
-    expect(axios.post)
+      expect(axios.post)
       .toHaveBeenCalledTimes(2);
+    } catch (error) {
+      throw new Error(
+        "Notepad: handles overwrite confirmation when duplicate file exists failed",
+        { cause: error }
+      );
+    }
   });
 });

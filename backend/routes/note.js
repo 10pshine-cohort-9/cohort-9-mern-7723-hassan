@@ -79,6 +79,10 @@ router.post("/save", async (req, res) => {
                 return res.status(200).json({
                     success: true,
                     message: "File overwritten successfully.",
+                    note: {
+                        _id: existingNote._id,
+                        name: finalName,
+                    },
                 });
             }
 
@@ -106,7 +110,7 @@ router.post("/save", async (req, res) => {
                     });
                 }
 
-                await Note.create({
+                const createdNote = await Note.create({
                     user: user._id,
                     title: finalName,
                     content: text,
@@ -115,6 +119,10 @@ router.post("/save", async (req, res) => {
                 return res.status(200).json({
                     success: true,
                     message: "File saved with new name.",
+                    note: {
+                        _id: createdNote._id,
+                        name: finalName,
+                    },
                 });
             }
 
@@ -124,7 +132,7 @@ router.post("/save", async (req, res) => {
             });
         }
 
-        await Note.create({
+        const createdNote = await Note.create({
             user: user._id,
             title: finalName,
             content: text,
@@ -133,6 +141,10 @@ router.post("/save", async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "File saved successfully.",
+            note: {
+                _id: createdNote._id,
+                name: finalName,
+            },
         });
 
     } catch (error) {

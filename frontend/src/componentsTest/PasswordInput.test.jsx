@@ -44,7 +44,8 @@ describe("PasswordInput", () => {
 
 
   test("shows password when eye button is clicked", async () => {
-    render(
+    try {
+      render(
       <PasswordInput
         id="password"
         label="Password"
@@ -66,15 +67,21 @@ describe("PasswordInput", () => {
       "text"
     );
 
-    expect(button).toHaveAttribute(
+      expect(button).toHaveAttribute(
       "aria-pressed",
       "true"
-    );
+      );
+    } catch (error) {
+      throw new Error("PasswordInput: shows password when eye button is clicked failed", {
+        cause: error,
+      });
+    }
   });
 
 
   test("hides password after clicking eye again", async () => {
-    render(
+    try {
+      render(
       <PasswordInput
         id="password"
         label="Password"
@@ -97,17 +104,23 @@ describe("PasswordInput", () => {
 
     const input = screen.getByLabelText("Password");
 
-    expect(input).toHaveAttribute(
+      expect(input).toHaveAttribute(
       "type",
       "password"
-    );
+      );
+    } catch (error) {
+      throw new Error("PasswordInput: hides password after clicking eye again failed", {
+        cause: error,
+      });
+    }
   });
 
 
   test("calls onChange when typing", async () => {
     const onChange = jest.fn();
 
-    render(
+    try {
+      render(
       <PasswordInput
         id="password"
         label="Password"
@@ -121,7 +134,12 @@ describe("PasswordInput", () => {
       "Password123"
     );
 
-    expect(onChange).toHaveBeenCalled();
+      expect(onChange).toHaveBeenCalled();
+    } catch (error) {
+      throw new Error("PasswordInput: calls onChange when typing failed", {
+        cause: error,
+      });
+    }
   });
 
 

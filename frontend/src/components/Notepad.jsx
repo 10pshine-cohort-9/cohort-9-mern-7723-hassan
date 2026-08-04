@@ -49,19 +49,19 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
   };
 
   useEffect(() => {
-  if (saveTrigger === 0) return;
+    if (saveTrigger === 0) return;
 
-  if (currentFileName) {
-    triggerSave(currentFileName, content, "overwrite");
-    return;
-  }
+    if (currentFileName) {
+      triggerSave(currentFileName, content, "overwrite");
+      return;
+    }
 
-  const name = prompt("Enter file name");
+    const name = prompt("Enter file name");
 
-  if (!name) return;
+    if (!name) return;
 
-  triggerSave(name, content);
-}, [saveTrigger]);
+    triggerSave(name, content);
+  }, [saveTrigger, currentFileName, content]);
   const triggerSave = async (
     name,
     text,
@@ -84,8 +84,14 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
         }
       );
 
+      const savedNote = response.data?.note;
+
       alert(response.data.message);
-      onFileCreated?.(currentFileName || name);
+      onFileCreated?.(
+        savedNote
+          ? { _id: savedNote._id, name: savedNote.name }
+          : { _id: null, name: currentFileName || name }
+      );
     } catch (err) {
       if (
         err.response &&

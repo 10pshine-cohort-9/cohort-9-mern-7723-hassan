@@ -4,7 +4,7 @@ import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordInput from '../components/PasswordInput.jsx'
 import { registerUser } from '../api/auth.js'
 import { validateEmail, validateStrongPassword, validateUsername } from '../utils/validation.js'
-import axios from 'axios'
+
 
 export default function Register() {
   const navigate = useNavigate()

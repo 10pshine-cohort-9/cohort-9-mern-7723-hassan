@@ -14,10 +14,17 @@ jest.mock("axios");
 
 jest.mock("../components/AvailableNotes", () => ({
   __esModule: true,
-  default: ({ filesList }) => (
+  default: ({ filesList, onDeleteFile, currentFileId }) => (
     <div data-testid="available-notes">
       {filesList.map((file) => (
-        <div key={file._id}>{file.name}</div>
+        <button
+          key={file._id}
+          type="button"
+          disabled={currentFileId === file._id}
+          onClick={() => onDeleteFile(file._id)}
+        >
+          {file.name}
+        </button>
       ))}
     </div>
   ),
@@ -79,7 +86,8 @@ describe("Sidebar", () => {
   });
 
   test("renders sidebar buttons", async () => {
-    render(<Sidebar {...props} />);
+    try {
+      render(<Sidebar {...props} />);
 
     expect(
       screen.getByRole("button", { name: /create new/i })
@@ -99,59 +107,91 @@ describe("Sidebar", () => {
 
     expect(
       screen.getByRole("button", { name: /settings/i })
-    ).toBeInTheDocument();
+      ).toBeInTheDocument();
+    } catch (error) {
+      throw new Error("Sidebar: renders sidebar buttons failed", { cause: error });
+    }
   });
 
   test("loads user profile", async () => {
-    render(<Sidebar {...props} />);
+    try {
+      render(<Sidebar {...props} />);
 
     expect(await screen.findByText("Ahmed")).toBeInTheDocument();
 
-    expect(screen.getByText("ahmed@test.com")).toBeInTheDocument();
+      expect(screen.getByText("ahmed@test.com")).toBeInTheDocument();
+    } catch (error) {
+      throw new Error("Sidebar: loads user profile failed", { cause: error });
+    }
   });
 
   test("calls onNew when Create New is clicked", async () => {
-    render(<Sidebar {...props} />);
+    try {
+      render(<Sidebar {...props} />);
 
     await userEvent.click(
       screen.getByRole("button", { name: /create new/i })
     );
 
-    expect(props.onNew).toHaveBeenCalledTimes(1);
+      expect(props.onNew).toHaveBeenCalledTimes(1);
+    } catch (error) {
+      throw new Error("Sidebar: calls onNew when Create New is clicked failed", {
+        cause: error,
+      });
+    }
   });
 
   test("calls onSave when Save is clicked", async () => {
-    render(<Sidebar {...props} />);
+    try {
+      render(<Sidebar {...props} />);
 
     await userEvent.click(
       screen.getByRole("button", { name: /save/i })
     );
 
-    expect(props.onSave).toHaveBeenCalledTimes(1);
+      expect(props.onSave).toHaveBeenCalledTimes(1);
+    } catch (error) {
+      throw new Error("Sidebar: calls onSave when Save is clicked failed", {
+        cause: error,
+      });
+    }
   });
 
   test("calls onExport when Export is clicked", async () => {
-    render(<Sidebar {...props} />);
+    try {
+      render(<Sidebar {...props} />);
 
     await userEvent.click(
       screen.getByRole("button", { name: /export/i })
     );
 
-    expect(props.onExport).toHaveBeenCalledTimes(1);
+      expect(props.onExport).toHaveBeenCalledTimes(1);
+    } catch (error) {
+      throw new Error("Sidebar: calls onExport when Export is clicked failed", {
+        cause: error,
+      });
+    }
   });
 
   test("calls onSettings when Settings is clicked", async () => {
-    render(<Sidebar {...props} />);
+    try {
+      render(<Sidebar {...props} />);
 
     await userEvent.click(
       screen.getByRole("button", { name: /settings/i })
     );
 
-    expect(props.onSettings).toHaveBeenCalledTimes(1);
+      expect(props.onSettings).toHaveBeenCalledTimes(1);
+    } catch (error) {
+      throw new Error("Sidebar: calls onSettings when Settings is clicked failed", {
+        cause: error,
+      });
+    }
   });
 
   test("shows available notes after clicking Open", async () => {
-    render(<Sidebar {...props} />);
+    try {
+      render(<Sidebar {...props} />);
 
     await waitFor(() =>
       expect(axios.get).toHaveBeenCalled()
@@ -166,6 +206,11 @@ describe("Sidebar", () => {
     ).toBeInTheDocument();
 
     expect(screen.getByText("Note One")).toBeInTheDocument();
-    expect(screen.getByText("Note Two")).toBeInTheDocument();
+      expect(screen.getByText("Note Two")).toBeInTheDocument();
+    } catch (error) {
+      throw new Error("Sidebar: shows available notes after clicking Open failed", {
+        cause: error,
+      });
+    }
   });
 });
