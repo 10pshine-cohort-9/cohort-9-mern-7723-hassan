@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+const logger = require('../pinoPattern/logger');
 const connectDB = async () => {
     const mongoUri = process.env.MONGODB_URI;
 
@@ -7,15 +8,12 @@ const connectDB = async () => {
         throw new Error("MONGODB_URI is not set. Add it to backend/.env before starting the server.");
     }
 
-    let conn;
-
     try {
-        conn = await mongoose.connect(mongoUri);
+        await mongoose.connect(mongoUri);
     } catch (error) {
-        console.error("MongoDB connection failed:", error.message);
+        logger.error({ err: error }, "MongoDB connection failed");
         throw error;
     }
-
 
 };
 

@@ -1,8 +1,9 @@
 const dotenv = require("dotenv");
+dotenv.config();
+
 const connectDB = require("./config/db");
 const app = require("./app");
-
-dotenv.config();
+const logger = require('./pinoPattern/logger');
 
 const PORT = process.env.PORT || 3000;
 
@@ -11,18 +12,18 @@ const PORT = process.env.PORT || 3000;
         await connectDB();
 
         const server = app.listen(PORT, () => {
-            console.log(` Server running on http://localhost:${PORT}`);
-        });s
+            logger.info({ port: PORT }, "Server started");
+        });
         server.on("error", (error) => {
             if (error.code === "EADDRINUSE") {
-                console.error(`Failed to start server: port ${PORT} is already in use.`);
+                logger.error({ err: error, port: PORT }, "Server port is already in use");
             } else {
-                console.error("Failed to start server:", error);
+                logger.error({ err: error, port: PORT }, "Failed to start server");
             }
             process.exit(1);
         });
     } catch (error) {
-        console.error("Failed to start server:", error);
+        logger.error({ err: error, port: PORT }, "Failed to start server");
         process.exit(1);
     }
 })();

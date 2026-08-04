@@ -3,9 +3,10 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const router = Router();
+const logger = require('../pinoPattern/logger');
 
 const saltRounds = 10;
-console.log("User routes loaded");
+logger.info("User routes loaded");
 router.get("/test", (req, res) => {
     res.send("Test route works");
 });
@@ -58,11 +59,10 @@ router.post("/login", async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
-
+        logger.error({ err: error }, "User login failed");
         return res.status(500).json({
             success: false,
-            message: error.message
+            message: "Unable to log in"
         });
     }
 });
@@ -118,7 +118,6 @@ router.get("/profile", async (req, res) => {
             });
         }
 
-        // Check Bearer format
         if (!authHeader.startsWith("Bearer ")) {
             return res.status(401).json({
                 success: false,
@@ -126,13 +125,29 @@ router.get("/profile", async (req, res) => {
             });
         }
 
-        // Extract token
         const token = authHeader.split(" ")[1];
 
-        // Verify JWT
-        const profile_details = jwt.verify(token, process.env.JWT_SECRET);
+        let profileDetails;
+        try {
+            profileDetails = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            logger.warn({ err: error }, "JWT verification failed");
+            return res.status(401).json({
+                success: false,
+                message: "Invalid or expired token"
+            });
+        }
 
-        const user = await User.findById(profile_details.id).select("-password");
+        let user;
+        try {
+            user = await User.findById(profileDetails.id).select("-password");
+        } catch (error) {
+            logger.error({ err: error }, "Failed to fetch user profile");
+            return res.status(500).json({
+                success: false,
+                message: "Unable to fetch user profile"
+            });
+        }
 
         if (!user) {
             return res.status(404).json({
@@ -148,11 +163,10 @@ router.get("/profile", async (req, res) => {
         });
 
     } catch (error) {
-        console.error("JWT Verification Error:", error);
-
-        return res.status(401).json({
+        logger.error({ err: error }, "User profile request failed");
+        return res.status(500).json({
             success: false,
-            message: error.message
+            message: "Unable to fetch user profile"
         });
     }
 });
