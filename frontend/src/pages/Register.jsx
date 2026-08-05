@@ -4,7 +4,7 @@ import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordInput from '../components/PasswordInput.jsx'
 import { registerUser } from '../api/auth.js'
 import { validateEmail, validateStrongPassword, validateUsername } from '../utils/validation.js'
-import axios from 'axios'
+
 
 export default function Register() {
   const navigate = useNavigate()
@@ -37,11 +37,7 @@ export default function Register() {
     setSubmitting(true)
     setServerError('')
     try {
-      const res= await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/register`,
-        form,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const res= await registerUser(form);
       if (res.data.success) {
         setTimeout(() => navigate("/login/"), 1500);
       } else {

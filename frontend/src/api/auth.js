@@ -1,13 +1,11 @@
-// Base URL for the backend API.
-// Set VITE_API_URL in a .env file at the project root, e.g.:
-//   VITE_API_URL=https://api.example.com
-const BASE_URL = import.meta.env.VITE_API_URL || ''
+import axios from "axios";
+import { API_URL } from "../config";
 
 async function request(path, payload) {
   let response
 
   try {
-    response = await fetch(`${BASE_URL}${path}`, {
+    response = await fetch(`${API_URL}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,9 +35,26 @@ async function request(path, payload) {
 
   return data
 }
-export function loginUser({ email, password }) {
-  return request('/api/auth/login', { email, password })
+
+export async function loginUser({ email, password }) {
+  return axios.post(
+    `${API_URL}/user/login`,
+    { email, password },
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 }
-export function registerUser({ username, email, password }) {
-  return request('/api/auth/register', { username, email, password })
+export async function registerUser({ username, email, password }) {
+  return axios.post(
+    `${API_URL}/user/register`,
+    { username, email, password },
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 }
