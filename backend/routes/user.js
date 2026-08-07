@@ -2,15 +2,17 @@ const { Router } = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
-const router = Router();
+const auth = require("../middleware/auth");
 const logger = require('../pinoPattern/logger');
 
+const router = Router();
 const saltRounds = 10;
-logger.info("User routes loaded");
+
 router.get("/test", (req, res) => {
     res.send("Test route works");
 });
-router.post("/login", async (req, res) => {
+
+router.post("/login", async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -37,15 +39,12 @@ router.post("/login", async (req, res) => {
         }
 
         const token = jwt.sign(
-            {
-                id: foundUser._id,
-                email: foundUser.email
-            },
+            { id: foundUser._id, email: foundUser.email },
             process.env.JWT_SECRET,
-            {
-                expiresIn: process.env.JWT_EXPIRES_IN
-            }
+            { expiresIn: process.env.JWT_EXPIRES_IN }
         );
+
+        logger.info({ userId: foundUser._id }, "User logged in");
 
         return res.status(200).json({
             success: true,
@@ -59,115 +58,73 @@ router.post("/login", async (req, res) => {
         });
 
     } catch (error) {
-        logger.error({ err: error }, "User login failed");
-        return res.status(500).json({
-            success: false,
-            message: "Unable to log in"
-        });
+        error.context = { email: req.body?.email };
+        next(error);
     }
 });
 
-router.post("/register", async (req, res) => {
-    const { username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-        return res.status(400).json({
-            message: "Username, email and password are required"
-        });
-    }
-
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-        return res.status(409).json({
-            message: "User already exists"
-        });
-    }
-    const passwordRegex =
-        /^(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,}$/;
-
-    if (!passwordRegex.test(password)) {
-        return res.status(400).json({
-            success: false,
-            message: "Password must be at least 6 characters long and contain at least one number and one special character."
-        });
-    }
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const newUser = new User({
-        username,
-        email,
-        password: hashedPassword
-    });
-
-    await newUser.save();
-
-    res.status(201).json({
-        success: true,
-        message: "User registered successfully"
-    });
-});
-router.get("/profile", async (req, res) => {
+router.post("/register", async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
+        const { username, email, password } = req.body;
 
-        if (!authHeader) {
-            return res.status(401).json({
-                success: false,
-                message: "Authorization header missing"
+        if (!username || !email || !password) {
+            return res.status(400).json({
+                message: "Username, email and password are required"
             });
         }
 
-        if (!authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid Authorization header format"
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({
+                message: "User already exists"
             });
         }
 
-        const token = authHeader.split(" ")[1];
+        const passwordRegex =
+            /^(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,}$/;
 
-        let profileDetails;
-        try {
-            profileDetails = jwt.verify(token, process.env.JWT_SECRET);
-        } catch (error) {
-            logger.warn({ err: error }, "JWT verification failed");
-            return res.status(401).json({
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({
                 success: false,
-                message: "Invalid or expired token"
+                message: "Password must be at least 6 characters long and contain at least one number and one special character."
             });
         }
 
-        let user;
-        try {
-            user = await User.findById(profileDetails.id).select("-password");
-        } catch (error) {
-            logger.error({ err: error }, "Failed to fetch user profile");
-            return res.status(500).json({
-                success: false,
-                message: "Unable to fetch user profile"
-            });
-        }
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
+        const newUser = new User({ username, email, password: hashedPassword });
+        await newUser.save();
 
-        return res.status(200).json({
+        logger.info({ userId: newUser._id }, "User registered");
+
+        return res.status(201).json({
             success: true,
-            message: "User profile fetched successfully",
-            user
+            message: "User registered successfully"
         });
 
     } catch (error) {
-        logger.error({ err: error }, "User profile request failed");
-        return res.status(500).json({
-            success: false,
-            message: "Unable to fetch user profile"
-        });
+        if (error.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                message: "User already exists"
+            });
+        }
+        error.context = { email: req.body?.email };
+        next(error);
     }
 });
+
+router.get("/profile", auth, async (req, res, next) => {
+    try {
+        return res.status(200).json({
+            success: true,
+            message: "User profile fetched successfully",
+            user: req.user
+        });
+    } catch (error) {
+        error.context = { userId: req.user?._id };
+        next(error);
+    }
+});
+
 module.exports = router;

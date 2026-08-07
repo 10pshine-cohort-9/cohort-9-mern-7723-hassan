@@ -39,15 +39,25 @@ app.use((req, res) => {
 });
 
 app.use((error, req, res, next) => {
-    req.log.error({ err: error }, "Unhandled request error");
+    req.log.error(
+        { err: error, ...(error.context || {}) },
+        "Unhandled request error"
+    );
 
     if (res.headersSent) {
         return next(error);
     }
 
+    if (error.name === "ValidationError") {
+        return res.status(400).json({ success: false, message: "Invalid data provided" });
+    }
+    if (error.name === "CastError") {
+        return res.status(400).json({ success: false, message: "Invalid ID format" });
+    }
+
     return res.status(error.status || 500).json({
         success: false,
-        message: error.status ? error.message : "Internal server error"
+        message: error.status ? error.message : "Something went wrong. Please try again later."
     });
 });
 

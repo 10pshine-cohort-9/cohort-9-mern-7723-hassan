@@ -33,61 +33,55 @@ async function closeDatabaseResources() {
     }
 }
 
-beforeAll(async () => {
-    let setupError;
+exports.mochaHooks = {
+    async beforeAll() {
+        let setupError;
 
-    try {
-        mongoServer = await MongoMemoryServer.create();
+        try {
+            mongoServer = await MongoMemoryServer.create();
+            const uri = mongoServer.getUri();
+            await mongoose.connect(uri);
+        } catch (error) {
+            setupError = error;
+            throw error;
+        } finally {
+            if (setupError) {
+                try {
+                    await closeDatabaseResources();
+                } catch (cleanupError) {
+                    preserveOriginalError(setupError, cleanupError);
+                }
+            }
+        }
+    },
 
-        const uri = mongoServer.getUri();
+    async afterEach() {
+        const collections = mongoose.connection.collections;
+        for (const key in collections) {
+            await collections[key].deleteMany({});
+        }
+    },
 
-        await mongoose.connect(uri);
-    } catch (error) {
-        setupError = error;
-        throw error;
-    } finally {
-        if (setupError) {
+    async afterAll() {
+        let teardownError;
+        let cleanupError;
+
+        try {
+            await mongoose.connection.dropDatabase();
+        } catch (error) {
+            teardownError = error;
+        } finally {
             try {
                 await closeDatabaseResources();
-            } catch (cleanupError) {
-                preserveOriginalError(setupError, cleanupError);
+            } catch (error) {
+                cleanupError = error;
+                if (teardownError) {
+                    preserveOriginalError(teardownError, cleanupError);
+                }
             }
         }
-    }
-});
 
-afterEach(async () => {
-    const collections = mongoose.connection.collections;
-
-    for (const key in collections) {
-        await collections[key].deleteMany({});
-    }
-});
-
-afterAll(async () => {
-    let teardownError;
-    let cleanupError;
-
-    try {
-        await mongoose.connection.dropDatabase();
-    } catch (error) {
-        teardownError = error;
-    } finally {
-        try {
-            await closeDatabaseResources();
-        } catch (error) {
-            cleanupError = error;
-            if (teardownError) {
-                preserveOriginalError(teardownError, cleanupError);
-            }
-        }
-    }
-
-    if (teardownError) {
-        throw teardownError;
-    }
-
-    if (cleanupError) {
-        throw cleanupError;
-    }
-});
+        if (teardownError) throw teardownError;
+        if (cleanupError) throw cleanupError;
+    },
+};

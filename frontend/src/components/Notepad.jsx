@@ -1,14 +1,18 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import DOMPurify from "dompurify";
-import {API_URL} from "../config";
+import { API_URL } from "../config";
 
 const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileName }) => {
   const editorRef = useRef(null);
   const accessToken = localStorage.getItem("accessToken");
-  const [isEditing, setIsEditing] = useState(!currentFileName);
+  const [isEditing, setIsEditing] = useState(!currentFileName); const [activeFormats, setActiveFormats] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+  });
 
-  // Keep editor synced when content is loaded from Sidebar
+  // Keep editor synced when content is loaded from Sidebara
   useEffect(() => {
     const sanitizedContent = DOMPurify.sanitize(content || "");
 
@@ -47,7 +51,26 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
       }
     }
   };
+  const updateToolbarState = () => {
+  setActiveFormats({
+    bold: document.queryCommandState("bold"),
+    italic: document.queryCommandState("italic"),
+    underline: document.queryCommandState("underline"),
+  });
+};
+  const applyFormat = (command, value = null) => {
+  if (!isEditing || !editorRef.current) return;
 
+  editorRef.current.focus();
+
+  setTimeout(() => {
+    document.execCommand(command, false, value);
+
+    setContent(editorRef.current.innerHTML);
+
+    updateToolbarState();
+  }, 0);
+};
   useEffect(() => {
     if (saveTrigger === 0) return;
 
@@ -125,8 +148,38 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
   };
 
   return (
-    <div className="h-full w-full overflow-hidden">
-      <div className="mb-3 flex justify-end">
+    <div className="h-full w-full overflow-hidden p-4">
+      <div className="mb-3 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => applyFormat("bold")}
+            disabled={!isEditing}
+            className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
+          >
+            <strong>Bold</strong>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => applyFormat("italic")}
+            disabled={!isEditing}
+            className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
+          >
+            <em>Italic</em>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => applyFormat("underline")}
+            disabled={!isEditing}
+            className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
+          >
+            <u>Underline</u>
+          </button>
+
+        </div>
+
         {currentFileName && !isEditing && (
           <button
             type="button"
@@ -137,6 +190,7 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
           </button>
         )}
       </div>
+
       <div
         ref={editorRef}
         contentEditable={isEditing}
@@ -145,9 +199,8 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
         dir="ltr"
         onKeyDown={handleKeyDown}
         onInput={isEditing ? handleInput : undefined}
-        className={`h-full w-full p-4 overflow-y-auto border rounded-md outline-none whitespace-pre-wrap break-words text-left ${
-          isEditing ? "bg-white" : "bg-slate-100"
-        }`}
+        className={`h-full w-full p-4 overflow-y-auto border rounded-md outline-none whitespace-pre-wrap break-words text-left ${isEditing ? "bg-white" : "bg-slate-100"
+          }`}
       />
     </div>
   );
