@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 
+process.env.JWT_SECRET = process.env.JWT_SECRET || "test-secret";
+process.env.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
+
 let mongoServer;
 
 function preserveOriginalError(originalError, cleanupError) {
@@ -34,6 +37,10 @@ async function closeDatabaseResources() {
 }
 
 exports.mochaHooks = {
+    /**
+ * Starts the in-memory MongoDB server and connects Mongoose.
+ */
+
     async beforeAll() {
         let setupError;
 
@@ -61,7 +68,9 @@ exports.mochaHooks = {
             await collections[key].deleteMany({});
         }
     },
-
+    /**
+ * Closes the database connection and stops the MongoDB memory server.
+ */
     async afterAll() {
         let teardownError;
         let cleanupError;

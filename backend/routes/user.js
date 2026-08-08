@@ -7,6 +7,7 @@ const logger = require('../pinoPattern/logger');
 
 const router = Router();
 const saltRounds = 10;
+const DUMMY_HASH = "qjkde1x1x7yxnhuz1mj2k9u";
 
 router.get("/test", (req, res) => {
     res.send("Test route works");
@@ -24,15 +25,12 @@ router.post("/login", async (req, res, next) => {
 
         const foundUser = await User.findOne({ email });
 
-        if (!foundUser) {
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
+        const isMatch = await bcrypt.compare(
+            password,
+            foundUser?.password || DUMMY_HASH
+        );
 
-        const isMatch = await bcrypt.compare(password, foundUser.password);
-
-        if (!isMatch) {
+        if (!foundUser || !isMatch) {
             return res.status(401).json({
                 message: "Invalid password"
             });
@@ -58,7 +56,7 @@ router.post("/login", async (req, res, next) => {
         });
 
     } catch (error) {
-        error.context = { email: req.body?.email };
+        error.context = { userId: foundUser?._id };
         next(error);
     }
 });

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import DOMPurify from "dompurify";
-import { API_URL } from "../config";
+import {API_URL} from "../config";
 
 const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileName }) => {
   const editorRef = useRef(null);
@@ -148,7 +148,7 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
   };
 
   return (
-    <div className="h-full w-full overflow-hidden p-4">
+    <div className="flex h-full w-full flex-col overflow-hidden p-4">
       <div className="mb-3 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <button
@@ -199,7 +199,7 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
         dir="ltr"
         onKeyDown={handleKeyDown}
         onInput={isEditing ? handleInput : undefined}
-        className={`h-full w-full p-4 overflow-y-auto border rounded-md outline-none whitespace-pre-wrap break-words text-left ${isEditing ? "bg-white" : "bg-slate-100"
+        className={`min-h-0 flex-1 w-full p-4 overflow-y-auto border rounded-md outline-none whitespace-pre-wrap break-words text-left ${isEditing ? "bg-white" : "bg-slate-100"
           }`}
       />
     </div>

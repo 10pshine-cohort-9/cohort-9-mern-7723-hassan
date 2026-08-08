@@ -13,7 +13,7 @@ module.exports = async function auth(req, res, next) {
         const user = await User.findById(decoded.id).select("-password");
 
         if (!user) {
-            return res.status(404).json({ success: false, message: "User not found" });
+            return res.status(401).json({ success: false, message: "User not found" });
         }
 
         req.user = user;

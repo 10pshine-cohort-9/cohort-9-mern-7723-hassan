@@ -5,7 +5,6 @@ const app = require("../app");
 const Note = require("../models/note");
 const User = require("../models/user");
 
-process.env.JWT_SECRET ||= "test-secret";
 
 describe("Note routes", () => {
     let token;
@@ -217,8 +216,10 @@ describe("Note routes", () => {
 
     describe("GET /note/files", () => {
         it("returns the authenticated user's notes sorted by most recently updated", async () => {
-            await Note.create({ user: user._id, title: "first", content: "a" });
-            await Note.create({ user: user._id, title: "second", content: "b" });
+            await Note.collection.insertMany([
+                { user: user._id, title: "first", content: "a", updatedAt: new Date("2024-01-01T00:00:00.000Z") },
+                { user: user._id, title: "second", content: "b", updatedAt: new Date("2024-01-02T00:00:00.000Z") },
+            ]);
 
             const res = await request(app)
                 .get("/note/files")

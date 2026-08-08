@@ -173,12 +173,14 @@ const Sidebar = ({
           <div className="relative w-full">
           <button
             onClick={seeSettings}
+            aria-expanded={setting}
+            aria-controls="settings-panel"
             className="w-full py-2.5 px-4 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium rounded-lg transition duration-200 flex items-center justify-center gap-2 "
           >
             Setting
           </button>
           {setting && (
-            <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] w-max">
+            <div id="settings-panel" className="absolute left-full top-0 ml-2 z-50 min-w-[180px] w-max">
              <Setting/>
             </div>
           )}
