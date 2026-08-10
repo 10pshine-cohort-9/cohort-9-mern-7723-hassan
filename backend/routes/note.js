@@ -1,50 +1,15 @@
 const express = require("express");
 const Note = require("../models/note");
-const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const User = require("../models/user");
+const auth = require('../middleware/auth');
+const logger = require('../pinoPattern/logger');
 
 const router = express.Router();
 
-router.post("/save", async (req, res) => {
+router.post("/save", auth, async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-
-        if (!authHeader) {
-            return res.status(401).json({
-                success: false,
-                message: "Authorization header missing",
-            });
-        }
-
-        if (!authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid Authorization header format",
-            });
-        }
-
-        const token = authHeader.split(" ")[1];
-
-        const profile = jwt.verify(token, process.env.JWT_SECRET, {
-            algorithms: ["HS256"],
-        });
-
-        const user = await User.findById(profile.id).select("-password");
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
-
-        const {
-            name,
-            text,
-            action,
-            newName
-        } = req.body;
+        const user = req.user;
+        const { name, text, action, newName } = req.body;
 
         if (!name || text === undefined) {
             return res.status(400).json({
@@ -72,9 +37,13 @@ router.post("/save", async (req, res) => {
             }
 
             if (action === "overwrite") {
-
                 existingNote.content = text;
                 await existingNote.save();
+
+                logger.info(
+                    { userId: user._id, noteId: existingNote._id },
+                    "Note overwritten"
+                );
 
                 return res.status(200).json({
                     success: true,
@@ -87,7 +56,6 @@ router.post("/save", async (req, res) => {
             }
 
             if (action === "rename") {
-
                 if (!newName) {
                     return res.status(400).json({
                         success: false,
@@ -110,17 +78,20 @@ router.post("/save", async (req, res) => {
                     });
                 }
 
-                const createdNote = await Note.create({
-                    user: user._id,
-                    title: finalName,
-                    content: text,
-                });
+                existingNote.title = finalName;
+                existingNote.content = text;
+                await existingNote.save();
+
+                logger.info(
+                    { userId: user._id, noteId: existingNote._id },
+                    "Note renamed"
+                );
 
                 return res.status(200).json({
                     success: true,
-                    message: "File saved with new name.",
+                    message: "File renamed and saved.",
                     note: {
-                        _id: createdNote._id,
+                        _id: existingNote._id,
                         name: finalName,
                     },
                 });
@@ -138,6 +109,11 @@ router.post("/save", async (req, res) => {
             content: text,
         });
 
+        logger.info(
+            { userId: user._id, noteId: createdNote._id },
+            "Note created"
+        );
+
         return res.status(200).json({
             success: true,
             message: "File saved successfully.",
@@ -148,57 +124,23 @@ router.post("/save", async (req, res) => {
         });
 
     } catch (error) {
-
-        if (error.name === "TokenExpiredError") {
-            return res.status(401).json({
-                success: false,
-                message: "Token has expired",
-            });
-        }
-
-        if (error.name === "JsonWebTokenError") {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid token",
-            });
-        }
-
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+        error.context = { userId: req.user?._id };
+        next(error);
     }
 });
 
-router.get("/files", async (req, res) => {
+router.get("/files", auth, async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized",
-            });
-        }
-
-        const token = authHeader.split(" ")[1];
-
-        const profile = jwt.verify(token, process.env.JWT_SECRET, {
-            algorithms: ["HS256"],
-        });
-
-        const user = await User.findById(profile.id);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
+        const user = req.user;
 
         const files = await Note.find({ user: user._id })
             .select("_id title content createdAt updatedAt")
             .sort({ updatedAt: -1 });
+
+        logger.info(
+            { userId: user._id, fileCount: files.length },
+            "Notes retrieved"
+        );
 
         return res.status(200).json({
             success: true,
@@ -213,53 +155,14 @@ router.get("/files", async (req, res) => {
         });
 
     } catch (error) {
-
-        if (error.name === "TokenExpiredError") {
-            return res.status(401).json({
-                success: false,
-                message: "Token has expired",
-            });
-        }
-
-        if (error.name === "JsonWebTokenError") {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid token",
-            });
-        }
-
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+        error.context = { userId: req.user?._id };
+        next(error);
     }
 });
-router.get("/:id", async (req, res) => {
+
+router.get("/:id", auth, async (req, res, next) => {
     try {
-
-        const authHeader = req.headers.authorization;
-
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized",
-            });
-        }
-
-        const token = authHeader.split(" ")[1];
-
-        const profile = jwt.verify(token, process.env.JWT_SECRET, {
-            algorithms: ["HS256"],
-        });
-
-        const user = await User.findById(profile.id).select("-password");
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
+        const user = req.user;
 
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({
@@ -280,6 +183,11 @@ router.get("/:id", async (req, res) => {
             });
         }
 
+        logger.info(
+            { userId: user._id, noteId: note._id },
+            "Note retrieved"
+        );
+
         return res.status(200).json({
             success: true,
             file: {
@@ -294,52 +202,14 @@ router.get("/:id", async (req, res) => {
         });
 
     } catch (error) {
-
-        if (error.name === "TokenExpiredError") {
-            return res.status(401).json({
-                success: false,
-                message: "Token has expired",
-            });
-        }
-
-        if (error.name === "JsonWebTokenError") {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid token",
-            });
-        }
-
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+        error.context = { userId: req.user?._id, noteId: req.params.id };
+        next(error);
     }
 });
-router.delete("/:id", async (req, res) => {
+
+router.delete("/:id", auth, async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized",
-            });
-        }
-
-        const token = authHeader.split(" ")[1];
-
-        const profile = jwt.verify(token, process.env.JWT_SECRET, {
-            algorithms: ["HS256"],
-        });
-
-        const user = await User.findById(profile.id).select("-password");
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
+        const user = req.user;
 
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({
@@ -362,30 +232,20 @@ router.delete("/:id", async (req, res) => {
 
         await note.deleteOne();
 
+        logger.info(
+            { userId: user._id, noteId: note._id },
+            "Note deleted"
+        );
+
         return res.status(200).json({
             success: true,
             message: "File deleted successfully",
         });
 
     } catch (error) {
-        if (error.name === "TokenExpiredError") {
-            return res.status(401).json({
-                success: false,
-                message: "Token has expired",
-            });
-        }
-
-        if (error.name === "JsonWebTokenError") {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid token",
-            });
-        }
-
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+        error.context = { userId: req.user?._id, noteId: req.params.id };
+        next(error);
     }
 });
+
 module.exports = router;

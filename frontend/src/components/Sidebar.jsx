@@ -2,12 +2,12 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import AvailableNotes from "./AvailableNotes";
 import {API_URL} from "../config";
+import Setting from "./Setting";
 const Sidebar = ({
   onNew,
   onSave,
   onOpen,
   onExport,
-  onSettings,
   setContent,
   refreshTrigger,
   currentFile,
@@ -17,8 +17,12 @@ const Sidebar = ({
   const [profile, setProfile] = useState(null);
   const [filesList, setFilesList] = useState([]);
   const [avl, setAvl] = useState(false)
+   const [setting, setSetting] = useState(false)
   const handleOpen = () => {
     setAvl(!avl)
+  };
+  const seeSettings= () => {
+    setSetting(!setting)
   };
 
   const handleOpenFile = async (id) => {
@@ -166,12 +170,21 @@ const Sidebar = ({
         <div className="border-t border-slate-700 my-3"></div>
 
         {/* NEW: Settings Button */}
-        <button
-          onClick={onSettings}
-          className="w-full py-2.5 px-4 bg-slate-700/50 hover:bg-slate-700 text-slate-300 font-medium rounded-lg transition duration-200 flex items-center justify-center gap-2 text-sm"
-        >
-          Settings
-        </button>
+          <div className="relative w-full">
+          <button
+            onClick={seeSettings}
+            aria-expanded={setting}
+            aria-controls="settings-panel"
+            className="w-full py-2.5 px-4 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium rounded-lg transition duration-200 flex items-center justify-center gap-2 "
+          >
+            Setting
+          </button>
+          {setting && (
+            <div id="settings-panel" className="absolute left-full top-0 ml-2 z-50 min-w-[180px] w-max">
+             <Setting/>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Profile */}
