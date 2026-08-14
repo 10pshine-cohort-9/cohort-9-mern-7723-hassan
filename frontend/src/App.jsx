@@ -4,7 +4,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./routing/ProtectedRoute"
 import PublicRoute from "./routing/PublicRoute"
-
+import Profile from "./pages/Profile";
 export default function App() {
   return (
     <BrowserRouter>
@@ -34,6 +34,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile/>
             </ProtectedRoute>
           }
         />
