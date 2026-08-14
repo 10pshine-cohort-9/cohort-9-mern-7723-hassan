@@ -37,6 +37,11 @@ const Dashboard = () => {
     setCurrentFile({ id: file._id, name: file.name });
   };
 
+  const handleImport = (fileText, fileName) => {
+    setContent(fileText);
+    setCurrentFile({ id: null, name: null });
+  };
+
   const handleExport = () => {
     if (!content) {
       alert("No content available to export");
@@ -113,6 +118,7 @@ const Dashboard = () => {
           onOpen={handleFileOpen}
           onSave={() => setSaveTrigger((prev) => prev + 1)}
           onExport={handleExport}
+          onImport={handleImport}
           onSettings={handleSettings}
           setContent={setContent}
           refreshTrigger={fileCreated}

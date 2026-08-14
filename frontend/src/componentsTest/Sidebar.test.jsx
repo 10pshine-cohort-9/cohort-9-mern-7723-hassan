@@ -1,7 +1,10 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import axios from "axios";
+
+const renderWithRouter = (ui) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 jest.mock("axios");
 
@@ -87,7 +90,7 @@ describe("Sidebar", () => {
 
   test("renders sidebar buttons", async () => {
     try {
-      render(<Sidebar {...props} />);
+      renderWithRouter(<Sidebar {...props} />);
 
     expect(
       screen.getByRole("button", { name: /create new/i })
@@ -106,7 +109,7 @@ describe("Sidebar", () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole("button", { name: /settings/i })
+      screen.getByRole("button", { name: /^setting$/i })
       ).toBeInTheDocument();
     } catch (error) {
       throw new Error("Sidebar: renders sidebar buttons failed", { cause: error });
@@ -115,7 +118,7 @@ describe("Sidebar", () => {
 
   test("loads user profile", async () => {
     try {
-      render(<Sidebar {...props} />);
+      renderWithRouter(<Sidebar {...props} />);
 
     expect(await screen.findByText("Ahmed")).toBeInTheDocument();
 
@@ -127,7 +130,7 @@ describe("Sidebar", () => {
 
   test("calls onNew when Create New is clicked", async () => {
     try {
-      render(<Sidebar {...props} />);
+      renderWithRouter(<Sidebar {...props} />);
 
     await userEvent.click(
       screen.getByRole("button", { name: /create new/i })
@@ -143,7 +146,7 @@ describe("Sidebar", () => {
 
   test("calls onSave when Save is clicked", async () => {
     try {
-      render(<Sidebar {...props} />);
+      renderWithRouter(<Sidebar {...props} />);
 
     await userEvent.click(
       screen.getByRole("button", { name: /save/i })
@@ -159,7 +162,7 @@ describe("Sidebar", () => {
 
   test("calls onExport when Export is clicked", async () => {
     try {
-      render(<Sidebar {...props} />);
+      renderWithRouter(<Sidebar {...props} />);
 
     await userEvent.click(
       screen.getByRole("button", { name: /export/i })
@@ -173,17 +176,18 @@ describe("Sidebar", () => {
     }
   });
 
-  test("calls onSettings when Settings is clicked", async () => {
+  test("toggles the settings panel when Setting is clicked", async () => {
     try {
-      render(<Sidebar {...props} />);
+      renderWithRouter(<Sidebar {...props} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: /settings/i })
+      screen.getByRole("button", { name: /^setting$/i })
     );
 
-      expect(props.onSettings).toHaveBeenCalledTimes(1);
+      expect(screen.getByText("Logout")).toBeInTheDocument();
+      expect(screen.getByText("Visit Profile")).toBeInTheDocument();
     } catch (error) {
-      throw new Error("Sidebar: calls onSettings when Settings is clicked failed", {
+      throw new Error("Sidebar: toggles the settings panel when Setting is clicked failed", {
         cause: error,
       });
     }
@@ -191,7 +195,7 @@ describe("Sidebar", () => {
 
   test("shows available notes after clicking Open", async () => {
     try {
-      render(<Sidebar {...props} />);
+      renderWithRouter(<Sidebar {...props} />);
 
     await waitFor(() =>
       expect(axios.get).toHaveBeenCalled()

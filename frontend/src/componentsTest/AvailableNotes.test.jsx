@@ -123,4 +123,80 @@ describe("AvailableNotes", () => {
       screen.getByLabelText("Delete Second Note")
     ).not.toBeDisabled();
   });
+
+  test("filters notes by search term", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AvailableNotes
+        filesList={files}
+        onOpenFile={onOpenFile}
+        onDeleteFile={onDeleteFile}
+        currentFileId={null}
+      />
+    );
+
+    await user.type(screen.getByLabelText("Search notes"), "First");
+
+    expect(screen.getByText("First Note")).toBeInTheDocument();
+    expect(screen.queryByText("Second Note")).not.toBeInTheDocument();
+  });
+
+  test("search is case-insensitive", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AvailableNotes
+        filesList={files}
+        onOpenFile={onOpenFile}
+        onDeleteFile={onDeleteFile}
+        currentFileId={null}
+      />
+    );
+
+    await user.type(screen.getByLabelText("Search notes"), "second");
+
+    expect(screen.getByText("Second Note")).toBeInTheDocument();
+    expect(screen.queryByText("First Note")).not.toBeInTheDocument();
+  });
+
+  test("shows empty state when no notes match search", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AvailableNotes
+        filesList={files}
+        onOpenFile={onOpenFile}
+        onDeleteFile={onDeleteFile}
+        currentFileId={null}
+      />
+    );
+
+    await user.type(screen.getByLabelText("Search notes"), "nonexistent");
+
+    expect(screen.getByText(/No notes match/i)).toBeInTheDocument();
+    expect(screen.queryByText("First Note")).not.toBeInTheDocument();
+    expect(screen.queryByText("Second Note")).not.toBeInTheDocument();
+  });
+
+  test("clear button resets search and restores full list", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AvailableNotes
+        filesList={files}
+        onOpenFile={onOpenFile}
+        onDeleteFile={onDeleteFile}
+        currentFileId={null}
+      />
+    );
+
+    await user.type(screen.getByLabelText("Search notes"), "First");
+    expect(screen.queryByText("Second Note")).not.toBeInTheDocument();
+
+    await user.click(screen.getByLabelText("Clear search"));
+
+    expect(screen.getByText("First Note")).toBeInTheDocument();
+    expect(screen.getByText("Second Note")).toBeInTheDocument();
+  });
 });

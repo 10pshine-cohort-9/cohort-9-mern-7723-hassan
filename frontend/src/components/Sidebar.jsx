@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import AvailableNotes from "./AvailableNotes";
 import { API_URL } from "../config";
@@ -10,6 +10,7 @@ const Sidebar = ({
   onSave,
   onOpen,
   onExport,
+  onImport,
   setContent,
   refreshTrigger,
   currentFile,
@@ -129,6 +130,72 @@ const Sidebar = ({
 
     fetchFiles();
   }, [accessToken, refreshTrigger]);
+  const openDropdownRef = useRef(null);
+  const settingsDropdownRef = useRef(null);
+
+  useEffect(() => {
+
+    if (!avl && !setting) return;
+
+    const handleClickOutside = (event) => {
+
+      if (
+        openDropdownRef.current &&
+        !openDropdownRef.current.contains(event.target)
+
+      ) {
+
+        setAvl(false);
+
+      }
+
+      if (
+
+        settingsDropdownRef.current &&
+
+        !settingsDropdownRef.current.contains(event.target)
+
+      ) {
+
+        setSetting(false);
+
+      }
+
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+  }, [avl, setting]);
+
+  const fileInputRef = useRef(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith(".txt")) {
+      alert("Only .txt files can be imported.");
+      event.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      onImport?.(e.target.result, file.name);
+    };
+    reader.onerror = () => {
+      alert("Failed to read file.");
+    };
+    reader.readAsText(file);
+
+    event.target.value = "";
+  };
 
   return (
     <div className="h-full flex flex-col justify-between bg-slate-800 text-gray-200 p-4 mt-6">
@@ -156,7 +223,7 @@ const Sidebar = ({
 
         {/* Open - only on Home */}
         {!isProfile && (
-          <div className="relative w-full">
+          <div className="relative w-full" ref={openDropdownRef}>
             <button
               onClick={handleOpen}
               className="w-full py-2.5 px-4 bg-slate-700 hover:bg-slate-800 text-white font-normal rounded-lg transition duration-200 flex items-center justify-center gap-2 border border-gray-300"
@@ -196,12 +263,31 @@ const Sidebar = ({
             Export
           </button>
         )}
+        {/* Import - only on Home */}
+        {!isProfile && (
+          <>
+            <button
+              onClick={handleImportClick}
+              className="w-full py-2.5 px-4 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium rounded-lg transition duration-200 flex items-center justify-center gap-2"
+            >
+              Import
+            </button>
+
+            <input
+              type="file"
+              accept=".txt,text/plain"
+              ref={fileInputRef}
+              onChange={handleFileSelected}
+              className="hidden"
+            />
+          </>
+        )}
 
         {/* Divider */}
         <div className="border-t border-slate-700 my-3"></div>
 
         {/* Settings */}
-        <div className="relative w-full">
+        <div className="relative w-full" ref={settingsDropdownRef}>
           <button
             onClick={seeSettings}
             aria-expanded={setting}
@@ -226,9 +312,8 @@ const Sidebar = ({
       <button
         type="button"
         onClick={goProfile}
-        className={`border-t border-slate-700 pt-4 mt-2 w-full text-left ${
-          isProfile ? "cursor-default" : "hover:bg-slate-700/50"
-        }`}
+        className={`border-t border-slate-700 pt-4 mt-2 w-full text-left ${isProfile ? "cursor-default" : "hover:bg-slate-700/50"
+          }`}
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
