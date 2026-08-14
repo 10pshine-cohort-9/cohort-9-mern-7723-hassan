@@ -109,7 +109,7 @@ const Profile = () => {
         `}
             >
                 <Sidebar
-                    onNew={() => navigate("/")}
+                    onNew={() => navigate("/dashboard")}
                     onOpen={() => { }}
                     onSave={() => { }}
                     onExport={() => { }}

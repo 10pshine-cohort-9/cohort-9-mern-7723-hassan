@@ -3,6 +3,7 @@ const Note = require("../models/note");
 const mongoose = require("mongoose");
 const auth = require('../middleware/auth');
 const logger = require('../pinoPattern/logger');
+const { getIO } = require("../socket");
 
 const router = express.Router();
 
@@ -39,6 +40,11 @@ router.post("/save", auth, async (req, res, next) => {
             if (action === "overwrite") {
                 existingNote.content = text;
                 await existingNote.save();
+                getIO().to(`user:${user._id}`).emit("note:updated", {
+                    _id: existingNote._id,
+                    name: finalName,
+                    content: existingNote.content,
+                });
 
                 logger.info(
                     { userId: user._id, noteId: existingNote._id },
@@ -81,6 +87,11 @@ router.post("/save", auth, async (req, res, next) => {
                 existingNote.title = finalName;
                 existingNote.content = text;
                 await existingNote.save();
+                getIO().to(`user:${user._id}`).emit("note:updated", {
+                    _id: existingNote._id,
+                    name: finalName,
+                    content: existingNote.content,
+                });
 
                 logger.info(
                     { userId: user._id, noteId: existingNote._id },
@@ -109,6 +120,12 @@ router.post("/save", auth, async (req, res, next) => {
             content: text,
         });
 
+        getIO().to(`user:${user._id}`).emit("note:created", {
+            _id: createdNote._id,
+            name: finalName,
+            content: createdNote.content,
+        });
+
         logger.info(
             { userId: user._id, noteId: createdNote._id },
             "Note created"
@@ -122,6 +139,7 @@ router.post("/save", auth, async (req, res, next) => {
                 name: finalName,
             },
         });
+
 
     } catch (error) {
         error.context = { userId: req.user?._id };
@@ -231,6 +249,9 @@ router.delete("/:id", auth, async (req, res, next) => {
         }
 
         await note.deleteOne();
+        getIO().to(`user:${user._id}`).emit("note:deleted", {
+            _id: note._id,
+        });
 
         logger.info(
             { userId: user._id, noteId: note._id },

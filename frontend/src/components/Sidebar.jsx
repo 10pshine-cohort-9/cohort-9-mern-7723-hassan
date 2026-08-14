@@ -35,7 +35,7 @@ const Sidebar = ({
   const goHome = () => {
     setAvl(false);
     setSetting(false);
-    navigate("/");
+    navigate("/dashboard");
   };
 
   const goProfile = () => {

@@ -19,6 +19,8 @@ const AvailableNotes = ({
     );
   }, [filesList, searchTerm]);
 
+  const hasSearchTerm = searchTerm.trim().length > 0;
+
   return (
     <div className="rounded-lg bg-white shadow-lg border border-gray-200 overflow-hidden">
       <div className="relative border-b border-gray-200 p-2">
@@ -48,7 +50,7 @@ const AvailableNotes = ({
       <div className="max-h-[25vh] overflow-y-auto">
         {filteredFiles.length === 0 ? (
           <p className="px-3 py-4 text-sm text-gray-400 text-center">
-            No notes match "{searchTerm}"
+            {hasSearchTerm ? `No notes match "${searchTerm}"` : "No notes available"}
           </p>
         ) : (
           filteredFiles.map((file) => (
@@ -57,7 +59,18 @@ const AvailableNotes = ({
               role="button"
               tabIndex={0}
               onClick={() => onOpenFile(file._id)}
-              onKeyDown={(event) => event.key === "Enter" && onOpenFile(file._id)}
+              onKeyDown={(event) => {
+                if (event.target.closest("button")) return;
+
+                if (
+                  event.key === "Enter" ||
+                  event.key === " " ||
+                  event.key === "Spacebar"
+                ) {
+                  event.preventDefault();
+                  onOpenFile(file._id);
+                }
+              }}
               className="flex items-center justify-between px-3 py-2 border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
             >
               <span className="flex-1 text-sm text-gray-700 truncate">

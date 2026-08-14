@@ -73,6 +73,33 @@ describe("AvailableNotes", () => {
     expect(onOpenFile).toHaveBeenCalledWith("1");
   });
 
+  test("supports Space activation on rows and ignores delete-button keyboard events", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AvailableNotes
+        filesList={files}
+        onOpenFile={onOpenFile}
+        onDeleteFile={onDeleteFile}
+        currentFileId={null}
+      />
+    );
+
+    const firstNoteButton = screen.getByRole("button", { name: "First Note" });
+    firstNoteButton.focus();
+    await user.keyboard(" ");
+
+    expect(onOpenFile).toHaveBeenCalledTimes(1);
+    expect(onOpenFile).toHaveBeenCalledWith("1");
+
+    const deleteButton = screen.getByLabelText("Delete First Note");
+    deleteButton.focus();
+    await user.keyboard("{Enter}");
+
+    expect(onDeleteFile).toHaveBeenCalledTimes(1);
+    expect(onOpenFile).toHaveBeenCalledTimes(1);
+  });
+
   test("calls onDeleteFile when delete button is clicked", () => {
     render(
       <AvailableNotes
@@ -158,6 +185,19 @@ describe("AvailableNotes", () => {
 
     expect(screen.getByText("Second Note")).toBeInTheDocument();
     expect(screen.queryByText("First Note")).not.toBeInTheDocument();
+  });
+
+  test("shows empty state when there are no notes available", () => {
+    render(
+      <AvailableNotes
+        filesList={[]}
+        onOpenFile={onOpenFile}
+        onDeleteFile={onDeleteFile}
+        currentFileId={null}
+      />
+    );
+
+    expect(screen.getByText("No notes available")).toBeInTheDocument();
   });
 
   test("shows empty state when no notes match search", async () => {

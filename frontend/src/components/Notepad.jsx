@@ -71,11 +71,23 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
     updateToolbarState();
   }, 0);
 };
+  const contentRef = useRef(content);
+
+  useEffect(() => {
+    contentRef.current = content;
+  }, [content]);
+
+  const currentFileNameRef = useRef(currentFileName);
+
+  useEffect(() => {
+    currentFileNameRef.current = currentFileName;
+  }, [currentFileName]);
+
   useEffect(() => {
     if (saveTrigger === 0) return;
 
-    if (currentFileName) {
-      triggerSave(currentFileName, content, "overwrite");
+    if (currentFileNameRef.current) {
+      triggerSave(currentFileNameRef.current, contentRef.current, "overwrite");
       return;
     }
 
@@ -83,8 +95,8 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
 
     if (!name) return;
 
-    triggerSave(name, content);
-  }, [saveTrigger, currentFileName, content]);
+    triggerSave(name, contentRef.current);
+  }, [saveTrigger]);
   const triggerSave = async (
     name,
     text,
