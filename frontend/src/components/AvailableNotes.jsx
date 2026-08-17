@@ -1,5 +1,5 @@
-import React from "react";
-import { MdDeleteForever } from "react-icons/md";
+import React, { useState, useMemo } from "react";
+import { MdDeleteForever, MdSearch, MdClose } from "react-icons/md";
 
 const AvailableNotes = ({
   filesList,
@@ -7,44 +7,101 @@ const AvailableNotes = ({
   onDeleteFile,
   currentFileId,
 }) => {
-  return (
-    <div className="max-h-[25vh] overflow-y-auto rounded-lg bg-white shadow-lg border border-gray-200">
-      {filesList.map((file) => (
-        <div
-          key={file._id}
-          role="button"
-          tabIndex={0}
-          onClick={() => onOpenFile(file._id)}
-          onKeyDown={(event) => event.key === "Enter" && onOpenFile(file._id)}
-          className="flex items-center justify-between px-3 py-2 border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
-        >
-          <span className="flex-1 text-sm text-gray-700 truncate">
-            {file.name}
-          </span>
+  const [searchTerm, setSearchTerm] = useState("");
 
+  const filteredFiles = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+
+    if (!term) return filesList;
+
+    return filesList.filter((file) =>
+      file.name?.toLowerCase().includes(term)
+    );
+  }, [filesList, searchTerm]);
+
+  const hasSearchTerm = searchTerm.trim().length > 0;
+
+  return (
+    <div className="rounded-lg bg-white shadow-lg border border-gray-200 overflow-hidden">
+      <div className="relative border-b border-gray-200 p-2">
+        <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none" />
+
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search notes..."
+          aria-label="Search notes"
+          className="w-full pl-8 pr-7 py-1.5 text-sm text-gray-700 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+
+        {searchTerm && (
           <button
             type="button"
-            aria-label={`Delete ${file.name}`}
-            disabled={currentFileId === file._id}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteFile(file._id);
-            }}
-            className={`ml-3 text-xl transition-colors ${
-              currentFileId === file._id
-                ? "text-gray-400 cursor-not-allowed"
-                : "text-red-500 hover:text-red-700"
-            }`}
-            title={
-              currentFileId === file._id
-                ? "Cannot delete the currently open file"
-                : "Delete file"
-            }
+            aria-label="Clear search"
+            onClick={() => setSearchTerm("")}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            <MdDeleteForever />
+            <MdClose />
           </button>
-        </div>
-      ))}
+        )}
+      </div>
+
+      <div className="max-h-[25vh] overflow-y-auto">
+        {filteredFiles.length === 0 ? (
+          <p className="px-3 py-4 text-sm text-gray-400 text-center">
+            {hasSearchTerm ? `No notes match "${searchTerm}"` : "No notes available"}
+          </p>
+        ) : (
+          filteredFiles.map((file) => (
+            <div
+              key={file._id}
+              role="button"
+              tabIndex={0}
+              onClick={() => onOpenFile(file._id)}
+              onKeyDown={(event) => {
+                if (event.target.closest("button")) return;
+
+                if (
+                  event.key === "Enter" ||
+                  event.key === " " ||
+                  event.key === "Spacebar"
+                ) {
+                  event.preventDefault();
+                  onOpenFile(file._id);
+                }
+              }}
+              className="flex items-center justify-between px-3 py-2 border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
+            >
+              <span className="flex-1 text-sm text-gray-700 truncate">
+                {file.name}
+              </span>
+
+              <button
+                type="button"
+                aria-label={`Delete ${file.name}`}
+                disabled={currentFileId === file._id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteFile(file._id);
+                }}
+                className={`ml-3 text-xl transition-colors ${
+                  currentFileId === file._id
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-red-500 hover:text-red-700"
+                }`}
+                title={
+                  currentFileId === file._id
+                    ? "Cannot delete the currently open file"
+                    : "Delete file"
+                }
+              >
+                <MdDeleteForever />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 };

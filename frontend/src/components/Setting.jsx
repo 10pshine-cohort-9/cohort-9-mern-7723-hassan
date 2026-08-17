@@ -14,9 +14,9 @@ const Settings = () => {
     if (item === "Logout") {
       logout();
     } 
-    // else if (item === "Visit Profile") {
-    //   navigate("/profile");
-    // }
+    else if (item === "Visit Profile") {
+      navigate("/profile");
+    }
   };
 
   return (
