@@ -28,7 +28,9 @@ function initSocket(server) {
 }
 
 function getIO() {
-    if (!io) throw new Error("Socket.io not initialized yet");
+    if (!io) {
+        return { to: () => ({ emit: () => {} }) };
+    }
     return io;
 }
 

@@ -6,6 +6,8 @@
     "tests/**",
     "**/*.test.js",
     "node_modules/**",
-    "coverage/**"
+    "coverage/**",
+    "config/**",
+    "index.js"
   ]
 }
