@@ -19,7 +19,6 @@ const Dashboard = () => {
       }
     };
 
-    // Set correct state on initial load
     handleResize();
 
     window.addEventListener("resize", handleResize);
@@ -107,10 +106,6 @@ link.click();
 link.remove();
 
     URL.revokeObjectURL(url);
-  };
-
-  const handleSettings = () => {
-    //console.log("Settings clicked");
   };
 
   return (

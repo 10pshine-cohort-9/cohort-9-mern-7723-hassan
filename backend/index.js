@@ -1,7 +1,7 @@
 const dotenv = require("dotenv");
 dotenv.config();
 const connectDB = require("./config/db");
-const http = require("http");                  
+const http = require("node:http");                
 const app = require("./app");
 const logger = require('./pinoPattern/logger');
 const PORT = process.env.PORT || 3000;

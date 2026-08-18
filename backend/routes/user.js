@@ -8,7 +8,10 @@ const logger = require('../pinoPattern/logger');
 const router = Router();
 const saltRounds = 10;
 const DUMMY_HASH = "qjkde1x1x7yxnhuz1mj2k9u";
-
+function handleRouteError(error, context, next) {
+    error.context = context;
+    next(error);
+}
 router.get("/test", (req, res) => {
     res.send("Test route works");
 });
@@ -20,6 +23,11 @@ router.post("/login", async (req, res, next) => {
         if (!email || !password) {
             return res.status(400).json({
                 message: "Email and password are required"
+            });
+        }
+        if (typeof email !== "string" || typeof password !== "string") {
+            return res.status(400).json({
+                message: "Invalid email or password format"
             });
         }
 
@@ -56,18 +64,25 @@ router.post("/login", async (req, res, next) => {
         });
 
     } catch (error) {
-        error.context = { userId: foundUser?._id };
-        next(error);
-    }
+        handleRouteError(error, { email: req.body?.email }, next);
+
+    };
 });
 
 router.post("/register", async (req, res, next) => {
     try {
         const { username, email, password } = req.body;
 
+        // In /register, right after the existing check:
         if (!username || !email || !password) {
             return res.status(400).json({
                 message: "Username, email and password are required"
+            });
+        }
+
+        if (typeof username !== "string" || typeof email !== "string" || typeof password !== "string") {
+            return res.status(400).json({
+                message: "Invalid input format"
             });
         }
 
@@ -107,11 +122,12 @@ router.post("/register", async (req, res, next) => {
                 message: "User already exists"
             });
         }
-        error.context = { email: req.body?.email };
-        next(error);
+        handleRouteError(error, { email: req.body?.email }, next);
     }
-});
 
+}
+
+);
 router.get("/profile", auth, async (req, res, next) => {
     try {
         return res.status(200).json({
@@ -120,8 +136,7 @@ router.get("/profile", auth, async (req, res, next) => {
             user: req.user
         });
     } catch (error) {
-        error.context = { userId: req.user?._id };
-        next(error);
+        handleRouteError(error, { userId: req.user?._id }, next);
     }
 });
 

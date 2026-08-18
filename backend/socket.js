@@ -1,5 +1,6 @@
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
+const logger = require('./pinoPattern/logger');
 
 let io;
 
@@ -15,13 +16,14 @@ function initSocket(server) {
             socket.userId = decoded.id;
             next();
         } catch (err) {
+            logger.warn({ err }, "Socket auth failed");
             next(new Error("Unauthorized"));
         }
     });
 
     io.on("connection", (socket) => {
         socket.join(`user:${socket.userId}`);
-        socket.on("disconnect", () => {});
+        socket.on("disconnect", () => { });
     });
 
     return io;
@@ -29,7 +31,7 @@ function initSocket(server) {
 
 function getIO() {
     if (!io) {
-        return { to: () => ({ emit: () => {} }) };
+        return { to: () => ({ emit: () => { } }) };
     }
     return io;
 }

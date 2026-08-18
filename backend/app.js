@@ -11,7 +11,7 @@ const notesRouter= require("./routes/note");
 const app = express();
 
 const corsOptions = {
-    origin: "http://localhost:5173"||"http://localhost:5174",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     optionsSuccessStatus: 200
 };
 
@@ -40,7 +40,7 @@ app.use((req, res) => {
 
 app.use((error, req, res, next) => {
     req.log.error(
-        { err: error, ...(error.context || {}) },
+        { err: error, ...error.context },
         "Unhandled request error"
     );
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import DOMPurify from "dompurify";
-import {API_URL} from "../config";
+import { API_URL } from "../config";
 
 const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileName }) => {
   const editorRef = useRef(null);
@@ -12,7 +12,6 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
     underline: false,
   });
 
-  // Keep editor synced when content is loaded from Sidebara
   useEffect(() => {
     const sanitizedContent = DOMPurify.sanitize(content || "");
 
@@ -52,25 +51,25 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
     }
   };
   const updateToolbarState = () => {
-  setActiveFormats({
-    bold: document.queryCommandState("bold"),
-    italic: document.queryCommandState("italic"),
-    underline: document.queryCommandState("underline"),
-  });
-};
+    setActiveFormats({
+      bold: document.queryCommandState("bold"),
+      italic: document.queryCommandState("italic"),
+      underline: document.queryCommandState("underline"),
+    });
+  };
   const applyFormat = (command, value = null) => {
-  if (!isEditing || !editorRef.current) return;
+    if (!isEditing || !editorRef.current) return;
 
-  editorRef.current.focus();
+    editorRef.current.focus();
 
-  setTimeout(() => {
-    document.execCommand(command, false, value);
+    setTimeout(() => {
+      document.execCommand(command, false, value);
 
-    setContent(editorRef.current.innerHTML);
+      setContent(editorRef.current.innerHTML);
 
-    updateToolbarState();
-  }, 0);
-};
+      updateToolbarState();
+    }, 0);
+  };
   const contentRef = useRef(content);
 
   useEffect(() => {
@@ -129,93 +128,102 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
       );
     } catch (err) {
       if (
-        err.response &&
-        err.response.status === 409 &&
-        err.response.data.requiresAction
+        err.response?.status === 409 &&
+        err.response?.data?.requiresAction
       ) {
-        const overwrite = window.confirm(
-          "A file with this name already exists.\n\nPress OK to overwrite.\nPress Cancel to rename."
-        );
+        {
+          const overwrite = window.confirm(
+            "A file with this name already exists.\n\nPress OK to overwrite.\nPress Cancel to rename."
+          );
 
-        if (overwrite) {
-          return triggerSave(name, text, "overwrite");
+          if (overwrite) {
+            return triggerSave(name, text, "overwrite");
+          }
+
+          const renamed = prompt("Enter a new file name");
+
+          if (!renamed) return;
+
+          return triggerSave(name, text, "rename", renamed);
         }
 
-        const renamed = prompt("Enter a new file name");
-
-        if (!renamed) return;
-
-        return triggerSave(name, text, "rename", renamed);
+        console.error(err);
+        alert(err.response?.data?.message || "Failed to save");
       }
+    };
 
-      console.error(err);
-      alert(err.response?.data?.message || "Failed to save");
-    }
-  };
+    const handleInput = () => {
+      if (!editorRef.current) return;
 
-  const handleInput = () => {
-    if (!editorRef.current) return;
+      setContent(editorRef.current.innerHTML);
+    };
 
-    setContent(editorRef.current.innerHTML);
-  };
+    return (
+      <div className="flex h-full w-full flex-col overflow-hidden p-4">
+        <div className="mb-3 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => applyFormat("bold")}
+              disabled={!isEditing}
+              className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${activeFormats.bold ? "bg-gray-300" : ""
+                }`}
+            >
+              <strong>Bold</strong>
+            </button>
 
-  return (
-    <div className="flex h-full w-full flex-col overflow-hidden p-4">
-      <div className="mb-3 flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => applyFormat("bold")}
-            disabled={!isEditing}
-            className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
-          >
-            <strong>Bold</strong>
-          </button>
+            <button
+              type="button"
+              onClick={() => applyFormat("italic")}
+              disabled={!isEditing}
+              className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${activeFormats.italic ? "bg-gray-300" : ""
+                }`}
+            >
+              <em>Italic</em>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => applyFormat("italic")}
-            disabled={!isEditing}
-            className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
-          >
-            <em>Italic</em>
-          </button>
+            <button
+              type="button"
+              onClick={() => applyFormat("underline")}
+              disabled={!isEditing}
+              className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${activeFormats.underline ? "bg-gray-300" : ""
+                }`}
+            >
+              <u>Underline</u>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => applyFormat("underline")}
-            disabled={!isEditing}
-            className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
-          >
-            <u>Underline</u>
-          </button>
+          </div>
 
+          {currentFileName && !isEditing && (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+            >
+              Edit
+            </button>
+          )}
         </div>
 
-        {currentFileName && !isEditing && (
-          <button
-            type="button"
-            onClick={() => setIsEditing(true)}
-            className="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
-          >
-            Edit
-          </button>
-        )}
+        <div
+          ref={editorRef}
+          contentEditable={isEditing}
+          role="textbox"
+          aria-multiline="true"
+          aria-label="Note content"
+          suppressContentEditableWarning
+          spellCheck={false}
+          dir="ltr"
+          onKeyDown={handleKeyDown}
+          onInput={isEditing ? handleInput : undefined}
+          onMouseUp={updateToolbarState}
+          onKeyUp={updateToolbarState}
+          className={`min-h-0 flex-1 w-full p-4 overflow-y-auto border rounded-md outline-none whitespace-pre-wrap break-words text-left ${isEditing ? "bg-white" : "bg-slate-100"
+            }`}
+        />
       </div>
-
-      <div
-        ref={editorRef}
-        contentEditable={isEditing}
-        suppressContentEditableWarning
-        spellCheck={false}
-        dir="ltr"
-        onKeyDown={handleKeyDown}
-        onInput={isEditing ? handleInput : undefined}
-        className={`min-h-0 flex-1 w-full p-4 overflow-y-auto border rounded-md outline-none whitespace-pre-wrap break-words text-left ${isEditing ? "bg-white" : "bg-slate-100"
-          }`}
-      />
-    </div>
-  );
-};
+    );
+  };
+}
 
 export default Notepad;

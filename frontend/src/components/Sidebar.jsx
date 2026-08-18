@@ -5,6 +5,7 @@ import AvailableNotes from "./AvailableNotes";
 import { API_URL } from "../config";
 import Setting from "./Setting";
 
+
 const Sidebar = ({
   onNew,
   onSave,
@@ -18,7 +19,7 @@ const Sidebar = ({
 }) => {
   const accessToken = localStorage.getItem("accessToken");
   const navigate = useNavigate();
-
+  const isValidObjectId = (id) => /^[a-f\d]{24}$/i.test(id);
   const [profile, setProfile] = useState(null);
   const [filesList, setFilesList] = useState([]);
   const [avl, setAvl] = useState(false);
@@ -45,6 +46,10 @@ const Sidebar = ({
   };
 
   const handleOpenFile = async (id) => {
+    if (!isValidObjectId(id)) {
+      alert("Invalid file reference.");
+      return;
+    }
     try {
       const res = await axios.get(`${API_URL}/note/${id}`, {
         headers: {
@@ -64,11 +69,14 @@ const Sidebar = ({
   };
 
   const handleDeleteFile = async (id) => {
+    if (!isValidObjectId(id)) {
+      alert("Invalid file reference.");
+      return;
+    }
     if (id === currentFile.id) {
       alert("Close the current file before deleting it.");
       return;
     }
-
     try {
       const res = await axios.delete(`${API_URL}/note/${id}`, {
         headers: {
@@ -175,7 +183,7 @@ const Sidebar = ({
     fileInputRef.current?.click();
   };
 
-  const handleFileSelected = (event) => {
+  const handleFileSelected = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -185,14 +193,12 @@ const Sidebar = ({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      onImport?.(e.target.result, file.name);
-    };
-    reader.onerror = () => {
+    try {
+      const text = await file.text();
+      onImport?.(text, file.name);
+    } catch {
       alert("Failed to read file.");
     };
-    reader.readAsText(file);
 
     event.target.value = "";
   };
