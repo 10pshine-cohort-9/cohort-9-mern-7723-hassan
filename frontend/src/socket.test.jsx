@@ -1,15 +1,23 @@
 import { io } from "socket.io-client";
-import { connectSocket, disconnectSocket } from "./socket";
 
 jest.mock("socket.io-client", () => ({
   io: jest.fn(),
 }));
 
+jest.mock("./config", () => ({
+  API_URL: "http://localhost:3000",
+}));
+
+import { connectSocket, disconnectSocket } from "./socket";
+
 describe("socket utility", () => {
   let mockSocketInstance;
 
   beforeEach(() => {
-    mockSocketInstance = { disconnect: jest.fn() };
+    mockSocketInstance = {
+      disconnect: jest.fn(),
+    };
+
     io.mockReturnValue(mockSocketInstance);
   });
 
@@ -24,8 +32,13 @@ describe("socket utility", () => {
     expect(io).toHaveBeenCalledTimes(1);
     expect(io).toHaveBeenCalledWith(
       expect.any(String),
-      { auth: { token: "test-token-123" } }
+      {
+        auth: {
+          token: "test-token-123",
+        },
+      }
     );
+
     expect(socket).toBe(mockSocketInstance);
   });
 
@@ -39,11 +52,13 @@ describe("socket utility", () => {
 
   it("disconnects and clears the socket so a new connection can be made", () => {
     connectSocket("token-a");
+
     disconnectSocket();
 
     expect(mockSocketInstance.disconnect).toHaveBeenCalledTimes(1);
 
     connectSocket("token-b");
+
     expect(io).toHaveBeenCalledTimes(2);
   });
 
