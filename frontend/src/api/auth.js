@@ -13,7 +13,6 @@ async function request(path, payload) {
       body: JSON.stringify(payload),
     })
   } catch (error) {
-    // Normalize network, CORS, and abort failures.
     throw new Error(
       error?.message || 'Unable to reach the server. Please check your connection and try again.'
     )
@@ -23,7 +22,7 @@ async function request(path, payload) {
   try {
     data = await response.json()
   } catch {
-    // Response had no JSON body — that's fine, we just fall through.
+
   }
 
   if (!response.ok) {

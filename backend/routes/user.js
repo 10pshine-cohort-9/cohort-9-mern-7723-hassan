@@ -8,8 +8,7 @@ const logger = require('../pinoPattern/logger');
 const router = Router();
 const saltRounds = 10;
 const DUMMY_HASH = "qjkde1x1x7yxnhuz1mj2k9u";
-const EMAIL_REGEX = /^[^\s@]{1,64}@[^
-\s@]{1,255}\.[^\s@]{2,24}$/;
+const EMAIL_REGEX = /^[^\s@]{1,64}@[^\s@]{1,255}(?:\.[^\s@]{2,24})$/;
 
 function handleRouteError(error, context, next) {
     error.context = context;
