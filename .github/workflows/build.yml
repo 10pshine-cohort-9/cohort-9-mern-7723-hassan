@@ -9,8 +9,6 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - main
-      - sonarCheck
-      - ProfilePageAndAdditionalFeatures
 jobs:
   sonarqube:
     name: SonarQube
