@@ -60,27 +60,31 @@ const Notepad = ({
     }
   };
 
-  const updateToolbarState = () => {
-    setActiveFormats({
-      bold: document.queryCommandState("bold"),
-      italic: document.queryCommandState("italic"),
-      underline: document.queryCommandState("underline"),
-    });
-  };
+ const updateToolbarState = () => {
+  if (typeof document.queryCommandState !== "function") {
+    return;
+  }
 
+  setActiveFormats({
+    bold: document.queryCommandState("bold"),
+    italic: document.queryCommandState("italic"),
+    underline: document.queryCommandState("underline"),
+  });
+};
   const applyFormat = (command, value = null) => {
-    if (!isEditing || !editorRef.current) return;
+  if (!isEditing || !editorRef.current) return;
 
-    editorRef.current.focus();
+  editorRef.current.focus();
 
-    setTimeout(() => {
+  setTimeout(() => {
+    if (typeof document.execCommand === "function") {
       document.execCommand(command, false, value);
+    }
 
-      setContent(editorRef.current.innerHTML);
-
-      updateToolbarState();
-    }, 0);
-  };
+    setContent(editorRef.current.innerHTML);
+    updateToolbarState();
+  }, 0);
+};
 
   const contentRef = useRef(content);
 
