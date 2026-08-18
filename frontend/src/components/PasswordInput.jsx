@@ -16,7 +16,24 @@ const EyeOffIcon = () => (
 
 export default function PasswordInput({ id, label, value, onChange, error, autoComplete = 'current-password', hint }) {
   const [visible, setVisible] = useState(false)
-
+    const describedById = error ? `${id}-error` : hint ? `${id}-hint` : undefined
+    const renderMessage = () => {
+  if (error) {
+    return (
+      <p id={`${id}-error`} className="mt-1.5 text-xs font-medium text-red-600">
+        {error}
+      </p>
+    )
+  }
+  if (hint) {
+    return (
+      <p id={`${id}-hint`} className="mt-1.5 text-xs text-subtle">
+        {hint}
+      </p>
+    )
+  }
+  return null
+}
   return (
     <div>
       <label htmlFor={id} className="block text-sm font-semibold text-ink mb-1.5">
@@ -35,7 +52,7 @@ export default function PasswordInput({ id, label, value, onChange, error, autoC
           onChange={onChange}
           autoComplete={autoComplete}
           aria-invalid={!!error}
-          aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+         aria-describedby={describedById}
           className="w-full rounded-md bg-transparent px-3.5 py-2.5 text-ink placeholder:text-subtle/70 outline-none"
           placeholder="Enter your password"
         />
@@ -49,15 +66,7 @@ export default function PasswordInput({ id, label, value, onChange, error, autoC
           {visible ? <EyeOffIcon /> : <EyeIcon />}
         </button>
       </div>
-      {error ? (
-        <p id={`${id}-error`} className="mt-1.5 text-xs font-medium text-red-600">
-          {error}
-        </p>
-      ) : hint ? (
-        <p id={`${id}-hint`} className="mt-1.5 text-xs text-subtle">
-          {hint}
-        </p>
-      ) : null}
+      {renderMessage()}
     </div>
   )
 }

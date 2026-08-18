@@ -149,7 +149,6 @@ link.remove();
           onSave={() => setSaveTrigger((prev) => prev + 1)}
           onExport={handleExport}
           onImport={handleImport}
-          onSettings={handleSettings}
           setContent={setContent}
           refreshTrigger={fileCreated}
           currentFile={currentFile}
