@@ -9,6 +9,7 @@ const logger = require('./pinoPattern/logger');
 const notesRouter= require("./routes/note");
 
 const app = express();
+app.disable("x-powered-by");
 
 const corsOptions = {
     origin: ["http://localhost:5173", "http://localhost:5174"],

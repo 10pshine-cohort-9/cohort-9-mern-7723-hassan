@@ -31,7 +31,7 @@ router.post("/login", async (req, res, next) => {
             });
         }
 
-        const foundUser = await User.findOne({ email });
+        const foundUser = await User.findOne({ email: String(email) });
 
         const isMatch = await bcrypt.compare(
             password,
@@ -86,7 +86,7 @@ router.post("/register", async (req, res, next) => {
             });
         }
 
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: String(email) });
         if (existingUser) {
             return res.status(409).json({
                 message: "User already exists"
