@@ -12,4 +12,12 @@ module.exports = {
   setupFilesAfterEnv: [
     "<rootDir>/src/setupTests.js",
   ],
+
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "<rootDir>/src/config.js",
+    "<rootDir>/src/main.jsx",
+    "<rootDir>/babel.config.cjs",
+    "<rootDir>/jest.config.cjs",
+  ],
 };
