@@ -42,7 +42,8 @@ export default function Login() {
       } else {
         setServerError(res.data.message || 'Unable to sign in. Please try again.');
       }
-    } catch (err) {setServerError(err.response?.data?.message || 'Unable to sign in. Please try again.')
+    } catch (err) {
+      setServerError(err.response?.data?.message || 'Unable to sign in. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -103,9 +104,13 @@ export default function Login() {
         />
 
         <div className="flex items-center justify-end">
-          <a href="#" className="text-sm font-medium text-word-500 hover:text-word-600">
+          <button
+            type="button"
+            onClick={() => {/* TODO: wire up forgot-password flow */ }}
+            className="text-sm font-medium text-word-500 hover:text-word-600"
+          >
             Forgot password?
-          </a>
+          </button>
         </div>
 
         <button

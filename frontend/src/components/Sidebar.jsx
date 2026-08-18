@@ -206,6 +206,7 @@ const Sidebar = ({
         {/* Home */}
         {isProfile && (
           <button
+            type="button"
             onClick={goHome}
             className="w-full py-2.5 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center gap-2"
           >
@@ -215,6 +216,7 @@ const Sidebar = ({
 
         {/* Create New */}
         <button
+          type="button"
           onClick={onNew}
           className="w-full py-2.5 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center gap-2"
         >
@@ -225,6 +227,7 @@ const Sidebar = ({
         {!isProfile && (
           <div className="relative w-full" ref={openDropdownRef}>
             <button
+              type="button"
               onClick={handleOpen}
               className="w-full py-2.5 px-4 bg-slate-700 hover:bg-slate-800 text-white font-normal rounded-lg transition duration-200 flex items-center justify-center gap-2 border border-gray-300"
             >
@@ -247,6 +250,7 @@ const Sidebar = ({
         {/* Save - only on Home */}
         {!isProfile && (
           <button
+            type="button"
             onClick={onSave}
             className="w-full py-2.5 px-4 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium rounded-lg transition duration-200 flex items-center justify-center gap-2"
           >
@@ -257,6 +261,7 @@ const Sidebar = ({
         {/* Export - only on Home */}
         {!isProfile && (
           <button
+            type="button"
             onClick={onExport}
             className="w-full py-2.5 px-4 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium rounded-lg transition duration-200 flex items-center justify-center gap-2"
           >
@@ -267,6 +272,7 @@ const Sidebar = ({
         {!isProfile && (
           <>
             <button
+              type="button"
               onClick={handleImportClick}
               className="w-full py-2.5 px-4 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium rounded-lg transition duration-200 flex items-center justify-center gap-2"
             >
@@ -289,6 +295,7 @@ const Sidebar = ({
         {/* Settings */}
         <div className="relative w-full" ref={settingsDropdownRef}>
           <button
+            type="button"
             onClick={seeSettings}
             aria-expanded={setting}
             aria-controls="settings-panel"

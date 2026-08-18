@@ -103,8 +103,8 @@ const Dashboard = () => {
     link.download = fileName;
 
     document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+link.click();
+link.remove();
 
     URL.revokeObjectURL(url);
   };
@@ -125,11 +125,13 @@ const Dashboard = () => {
 
       {/* Overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
-          onClick={toggleSidebar}
-        />
-      )}
+  <button
+    type="button"
+    aria-label="Close sidebar"
+    className="fixed inset-0 bg-black/50 z-30 md:hidden cursor-default"
+    onClick={toggleSidebar}
+  />
+)}
 
       {/* Sidebar */}
       <div

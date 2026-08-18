@@ -53,24 +53,6 @@ const Profile = () => {
         fetchProfile();
         fetchFiles();
     }, [accessToken]);
-
-    const handleNew = () => {
-        // Profile doesn't edit the notepad directly.
-        // Navigation to Dashboard can be handled by your router.
-    };
-
-    const handleOpen = () => {
-        // Opening files remains handled by the Dashboard.
-    };
-
-    const handleSave = () => {
-        // Save remains a Dashboard operation.
-    };
-
-    const handleExport = () => {
-        // Export remains a Dashboard operation.
-    };
-
     const username = profile?.username || "Loading...";
     const email = profile?.email || "";
     const initial = profile?.username?.charAt(0).toUpperCase() || "?";
@@ -87,11 +69,13 @@ const Profile = () => {
 
             {/* Overlay */}
             {isOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-30 md:hidden"
-                    onClick={toggleSidebar}
-                />
-            )}
+    <button
+        type="button"
+        aria-label="Close sidebar"
+        className="fixed inset-0 bg-black/50 z-30 md:hidden cursor-default"
+        onClick={toggleSidebar}
+    />
+)}
 
             {/* Sidebar */}
             <div

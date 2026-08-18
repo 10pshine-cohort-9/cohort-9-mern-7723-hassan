@@ -1,4 +1,4 @@
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+export const EMAIL_REGEX = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,24}$/
 
 // Min 6 characters, at least one letter, at least one number,
 // and at least one special (non-alphanumeric) character.
