@@ -106,8 +106,8 @@ export default function Login() {
         <div className="flex items-center justify-end">
           <button
             type="button"
-            onClick={() => {/* TODO: wire up forgot-password flow */ }}
-            className="text-sm font-medium text-word-500 hover:text-word-600"
+            disabled
+            className="cursor-not-allowed text-sm font-medium text-word-500 opacity-70"
           >
             Forgot password?
           </button>

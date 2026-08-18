@@ -34,7 +34,7 @@ Cohort 9 — MERN (Node.js + React.js) assignment for Hassan Ahmed. A full-stack
 
 ## Project Structure
 
-```
+```text
 cohort-9-mern-7723-hassan/
 ├── backend/       # Express API, JWT auth, MongoDB models, Socket.IO server, Pino logging
 ├── frontend/      # React (Vite) app, Tailwind UI, Socket.IO client

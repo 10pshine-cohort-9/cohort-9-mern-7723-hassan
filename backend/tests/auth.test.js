@@ -57,6 +57,15 @@ describe("Registration", () => {
         expect(res.body.user.username).to.equal("Ahmed");
     });
 
+    it("should reject invalid email format during registration", async () => {
+        const res = await request(app)
+            .post("/user/register")
+            .send({ username: "Ahmed", email: "user@domain", password: "Password@1" });
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body.message).to.equal("Invalid input format");
+    });
+
     it("should reject malformed JWT token", async () => {
         const res = await request(app)
             .get("/user/profile")
@@ -175,6 +184,15 @@ describe("Login - additional coverage", () => {
         const res = await request(app)
             .post("/user/login")
             .send({ email: { $gt: "" }, password: "anything" });
+
+        expect(res.statusCode).to.equal(400);
+        expect(res.body.message).to.equal("Invalid email or password format");
+    });
+
+    it("should reject invalid email format on login", async () => {
+        const res = await request(app)
+            .post("/user/login")
+            .send({ email: "user name@domain.com", password: "Password@1" });
 
         expect(res.statusCode).to.equal(400);
         expect(res.body.message).to.equal("Invalid email or password format");

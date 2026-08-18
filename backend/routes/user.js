@@ -8,6 +8,9 @@ const logger = require('../pinoPattern/logger');
 const router = Router();
 const saltRounds = 10;
 const DUMMY_HASH = "qjkde1x1x7yxnhuz1mj2k9u";
+const EMAIL_REGEX = /^[^\s@]{1,64}@[^
+\s@]{1,255}\.[^\s@]{2,24}$/;
+
 function handleRouteError(error, context, next) {
     error.context = context;
     next(error);
@@ -26,6 +29,12 @@ router.post("/login", async (req, res, next) => {
             });
         }
         if (typeof email !== "string" || typeof password !== "string") {
+            return res.status(400).json({
+                message: "Invalid email or password format"
+            });
+        }
+
+        if (!email.trim() || !EMAIL_REGEX.test(email.trim())) {
             return res.status(400).json({
                 message: "Invalid email or password format"
             });
@@ -81,6 +90,12 @@ router.post("/register", async (req, res, next) => {
         }
 
         if (typeof username !== "string" || typeof email !== "string" || typeof password !== "string") {
+            return res.status(400).json({
+                message: "Invalid input format"
+            });
+        }
+
+        if (!email.trim() || !EMAIL_REGEX.test(email.trim())) {
             return res.status(400).json({
                 message: "Invalid input format"
             });

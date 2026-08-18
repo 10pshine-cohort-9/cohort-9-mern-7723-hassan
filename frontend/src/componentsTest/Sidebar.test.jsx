@@ -17,20 +17,27 @@ jest.mock("axios");
 
 jest.mock("../components/AvailableNotes", () => ({
   __esModule: true,
-  default: ({ filesList, onDeleteFile, currentFileId }) => (
+  default: ({ filesList, onOpenFile, onDeleteFile, currentFileId }) => {
+    const React = require("react");
+    return (
     <div data-testid="available-notes">
       {filesList.map((file) => (
-        <button
-          key={file._id}
-          type="button"
-          disabled={currentFileId === file._id}
-          onClick={() => onDeleteFile(file._id)}
-        >
-          {file.name}
-        </button>
+        <React.Fragment key={file._id}>
+          <button
+            type="button"
+            disabled={currentFileId === file._id}
+            onClick={() => onDeleteFile(file._id)}
+          >
+            {file.name}
+          </button>
+          <button type="button" onClick={() => onOpenFile(file._id)}>
+            Open {file.name}
+          </button>
+        </React.Fragment>
       ))}
     </div>
-  ),
+    );
+  },
 }));
 
 describe("Sidebar", () => {
@@ -269,6 +276,8 @@ describe("Sidebar", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /open/i }));
     await waitFor(() => expect(screen.getByText("Note One")).toBeInTheDocument());
+    await userEvent.click(screen.getByRole("button", { name: "Open Note One" }));
+    await waitFor(() => expect(window.alert).toHaveBeenCalledWith("Failed to open file"));
   });
 
  test("shows an alert when importing a non-txt file", async () => {

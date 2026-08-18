@@ -62,6 +62,19 @@ jest.mock("../components/Sidebar", () => {
           Open File
         </button>
 
+        <button
+          type="button"
+          onClick={() =>
+            onOpen({
+              _id: "124",
+              name: "Test Note.txt",
+              content: "<p>Hello World</p>",
+            })
+          }
+        >
+          Open TXT File
+        </button>
+
         <button type="button" onClick={onSave}>
           Save File
         </button>
@@ -248,7 +261,7 @@ describe("Dashboard", () => {
 
     expect(
       screen.getByTestId("notepad-content")
-    ).toHaveTextContent("");
+    ).toBeEmptyDOMElement();
 
     expect(
       screen.getByTestId("notepad-file-name")
@@ -509,7 +522,7 @@ describe("Dashboard", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("notepad-content")
-      ).toHaveTextContent("");
+      ).toBeEmptyDOMElement();
 
       expect(
         screen.getByTestId("current-file")
@@ -651,9 +664,11 @@ describe("Dashboard", () => {
 
     render(<Dashboard />);
 
-    const sidebar = screen.getByTestId("sidebar");
-
-    expect(sidebar).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", {
+        name: "Open TXT File",
+      })
+    );
 
     await user.click(
       screen.getByRole("button", {
@@ -661,9 +676,8 @@ describe("Dashboard", () => {
       })
     );
 
-    expect(window.alert).toHaveBeenCalledWith(
-      "No content available to export"
-    );
+    await waitFor(() => expect(clickMock).toHaveBeenCalledTimes(1));
+    expect(clickMock.mock.instances[0].download).toBe("Test Note.txt");
 
     clickMock.mockRestore();
   });
@@ -671,13 +685,29 @@ describe("Dashboard", () => {
   test("handles desktop resize by keeping sidebar open", () => {
     const originalInnerWidth = window.innerWidth;
 
+    render(<Dashboard />);
+
+    expect(
+      screen.getByTestId("sidebar-status")
+    ).toHaveTextContent("open");
+
+    act(() => {
+      screen.getByRole("button", { name: "Toggle sidebar" }).click();
+    });
+
+    expect(
+      screen.getByTestId("sidebar-status")
+    ).toHaveTextContent("closed");
+
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
       value: 1024,
     });
 
-    render(<Dashboard />);
+    act(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
 
     expect(
       screen.getByTestId("sidebar-status")
