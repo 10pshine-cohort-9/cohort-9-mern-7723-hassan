@@ -1,0 +1,44 @@
+name: Build
+
+# Manual trigger only for now — flip this back to push/pull_request
+# once we're ready to actually wire this into CI (see sonarCheck branch notes).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install backend deps
+        run: npm install
+        working-directory: backend
+
+      - name: Run backend tests with coverage
+        run: npm run test:coverage
+        working-directory: backend
+        continue-on-error: true
+
+      - name: Install frontend deps
+        run: npm install
+        working-directory: frontend
+
+      - name: Run frontend tests with coverage
+        run: npm run test:coverage
+        working-directory: frontend
+        continue-on-error: true
