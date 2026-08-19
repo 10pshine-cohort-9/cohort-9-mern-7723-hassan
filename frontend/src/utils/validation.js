@@ -1,7 +1,4 @@
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-// Min 6 characters, at least one letter, at least one number,
-// and at least one special (non-alphanumeric) character.
 export const STRONG_PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/
 
 export function validateEmail(email) {

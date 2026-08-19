@@ -19,7 +19,6 @@ const Dashboard = () => {
       }
     };
 
-    // Set correct state on initial load
     handleResize();
 
     window.addEventListener("resize", handleResize);
@@ -41,8 +40,6 @@ const Dashboard = () => {
 
     socket.on("note:updated", (updatedNote) => {
       setFileCreated((prev) => prev + 1);
-
-      // If the note that changed is the one currently open, refresh its content
       if (currentFileRef.current.id === updatedNote._id) {
         setContent(updatedNote.content);
       }

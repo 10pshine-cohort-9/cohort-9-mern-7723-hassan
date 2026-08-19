@@ -31,8 +31,9 @@ function initSocket(server) {
 
 function getIO() {
     if (!io) {
-        return { to: () => ({ emit: () => { } }) };
+        throw new Error("Socket.io has not been initialized");
     }
+
     return io;
 }
 

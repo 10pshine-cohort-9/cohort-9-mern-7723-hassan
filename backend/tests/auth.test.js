@@ -58,12 +58,16 @@ describe("Registration", () => {
     });
 
     it("should reject invalid email format during registration", async () => {
-        const res = await request(app)
-            .post("/user/register")
-            .send({ username: "Ahmed", email: "user@domain", password: "Password@1" });
+        try {
+            const res = await request(app)
+                .post("/user/register")
+                .send({ username: "Ahmed", email: "user@domain", password: "Password@1" });
 
-        expect(res.statusCode).to.equal(400);
-        expect(res.body.message).to.equal("Invalid input format");
+            expect(res.statusCode).to.equal(400);
+            expect(res.body.message).to.equal("Invalid input format");
+        } catch (error) {
+            throw error;
+        }
     });
 
     it("should reject malformed JWT token", async () => {
