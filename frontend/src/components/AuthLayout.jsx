@@ -1,5 +1,3 @@
-// Signature element: a small stack of "document" cards with a folded corner,
-// evoking a Word document — quiet, in the brand's own blue, used once.
 const DocumentMark = () => (
   <svg
     width="120"

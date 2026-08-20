@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install backend deps
+        run: npm ci
+        working-directory: backend
+
+      - name: Run backend tests with coverage
+        run: npm run test:coverage
+        working-directory: backend
+       
+
+      - name: Install frontend deps
+        run: npm ci
+        working-directory: frontend
+
+      - name: Run frontend tests with coverage
+        run: npm run test:coverage
+        working-directory: frontend
+        

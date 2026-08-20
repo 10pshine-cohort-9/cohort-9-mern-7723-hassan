@@ -12,7 +12,6 @@ const Notepad = ({ saveTrigger, content, setContent, onFileCreated, currentFileN
     underline: false,
   });
 
-  // Keep editor synced when content is loaded from Sidebara
   useEffect(() => {
     const sanitizedContent = DOMPurify.sanitize(content || "");
 

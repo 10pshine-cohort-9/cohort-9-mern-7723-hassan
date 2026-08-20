@@ -8,6 +8,13 @@ const logger = require('../pinoPattern/logger');
 const router = Router();
 const saltRounds = 10;
 const DUMMY_HASH = "qjkde1x1x7yxnhuz1mj2k9u";
+const EMAIL_REGEX = /^[^\s@]{1,64}@[^\s@]{1,255}(?:\.[^\s@]{2,24})$/;
+
+function handleRouteError(error, context, next) {
+    const { email, userId, ...safeContext } = context || {};
+    error.context = safeContext;
+    next(error);
+}
 
 router.get("/test", (req, res) => {
     res.send("Test route works");
@@ -23,7 +30,21 @@ router.post("/login", async (req, res, next) => {
             });
         }
 
-        const foundUser = await User.findOne({ email });
+        if (typeof email !== "string" || typeof password !== "string") {
+            return res.status(400).json({
+                message: "Invalid email or password format"
+            });
+        }
+
+        const normalizedEmail = email.trim();
+
+        if (!normalizedEmail || !EMAIL_REGEX.test(normalizedEmail)) {
+            return res.status(400).json({
+                message: "Invalid email or password format"
+            });
+        }
+
+        const foundUser = await User.findOne({ email: normalizedEmail });
 
         const isMatch = await bcrypt.compare(
             password,
@@ -56,22 +77,33 @@ router.post("/login", async (req, res, next) => {
         });
 
     } catch (error) {
-        error.context = { userId: foundUser?._id };
-        next(error);
-    }
+        handleRouteError(error, { email: req.body?.email }, next);
+
+    };
 });
 
 router.post("/register", async (req, res, next) => {
     try {
         const { username, email, password } = req.body;
-
         if (!username || !email || !password) {
             return res.status(400).json({
                 message: "Username, email and password are required"
             });
         }
 
-        const existingUser = await User.findOne({ email });
+        if (typeof username !== "string" || typeof email !== "string" || typeof password !== "string") {
+            return res.status(400).json({
+                message: "Invalid input format"
+            });
+        }
+
+        if (!email.trim() || !EMAIL_REGEX.test(email.trim())) {
+            return res.status(400).json({
+                message: "Invalid input format"
+            });
+        }
+
+        const existingUser = await User.findOne({ email: String(email) });
         if (existingUser) {
             return res.status(409).json({
                 message: "User already exists"
@@ -107,11 +139,12 @@ router.post("/register", async (req, res, next) => {
                 message: "User already exists"
             });
         }
-        error.context = { email: req.body?.email };
-        next(error);
+        handleRouteError(error, { email: req.body?.email }, next);
     }
-});
 
+}
+
+);
 router.get("/profile", auth, async (req, res, next) => {
     try {
         return res.status(200).json({
@@ -120,8 +153,7 @@ router.get("/profile", auth, async (req, res, next) => {
             user: req.user
         });
     } catch (error) {
-        error.context = { userId: req.user?._id };
-        next(error);
+        handleRouteError(error, { userId: req.user?._id }, next);
     }
 });
 
