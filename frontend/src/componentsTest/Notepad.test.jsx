@@ -320,4 +320,83 @@ describe("Notepad", () => {
       );
     }
   });
+    test("applies bold formatting when Bold is clicked", async () => {
+    document.execCommand = jest.fn();
+
+    render(
+      <Notepad
+        saveTrigger={0}
+        content="Hello"
+        setContent={jest.fn()}
+        onFileCreated={jest.fn()}
+        currentFileName={null}
+      />
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /bold/i })
+    );
+
+    await waitFor(() => {
+      expect(document.execCommand).toHaveBeenCalledWith(
+        "bold",
+        false,
+        null
+      );
+    });
+  });
+
+
+  test("applies italic formatting when Italic is clicked", async () => {
+    document.execCommand = jest.fn();
+
+    render(
+      <Notepad
+        saveTrigger={0}
+        content="Hello"
+        setContent={jest.fn()}
+        onFileCreated={jest.fn()}
+        currentFileName={null}
+      />
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /italic/i })
+    );
+
+    await waitFor(() => {
+      expect(document.execCommand).toHaveBeenCalledWith(
+        "italic",
+        false,
+        null
+      );
+    });
+  });
+
+
+  test("applies underline formatting when Underline is clicked", async () => {
+    document.execCommand = jest.fn();
+
+    render(
+      <Notepad
+        saveTrigger={0}
+        content="Hello"
+        setContent={jest.fn()}
+        onFileCreated={jest.fn()}
+        currentFileName={null}
+      />
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /underline/i })
+    );
+
+    await waitFor(() => {
+      expect(document.execCommand).toHaveBeenCalledWith(
+        "underline",
+        false,
+        null
+      );
+    });
+  });
 });
