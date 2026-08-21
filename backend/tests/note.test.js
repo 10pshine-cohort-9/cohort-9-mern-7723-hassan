@@ -4,6 +4,7 @@ const sinon = require("sinon");
 const app = require("../app");
 const Note = require("../models/note");
 const User = require("../models/user");
+const socket = require("../socket");
 
 
 describe("Note routes", () => {
@@ -11,6 +12,12 @@ describe("Note routes", () => {
     let user;
 
     beforeEach(async () => {
+        sinon.stub(socket, "getIO").returns({
+            to: () => ({
+                emit: () => {}
+            })
+        });
+
         await request(app)
             .post("/user/register")
             .send({ username: "Alice", email: "alice@example.com", password: "Password@1" });
