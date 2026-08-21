@@ -8,61 +8,47 @@ jest.mock("./pages/Dashboard", () => () => <div>Dashboard Page</div>);
 jest.mock("./pages/Profile", () => () => <div>Profile Page</div>);
 
 jest.mock("./routing/ProtectedRoute", () => {
-  const PropTypes = require("prop-types");
+    const PropTypes = require("prop-types");
+    const MockRoute = ({ children }) => <>{children}</>;
 
-  const MockProtectedRoute = ({ children }) => <>{children}</>;
+    MockRoute.propTypes = {
+        children: PropTypes.node.isRequired,
+    };
 
-  MockProtectedRoute.propTypes = {
-    children: PropTypes.node.isRequired,
-  };
-
-  return MockProtectedRoute;
+    return MockRoute;
 });
 
 jest.mock("./routing/PublicRoute", () => {
-  const PropTypes = require("prop-types");
+    const MockRoute = require("./routing/ProtectedRoute");
 
-  const MockPublicRoute = ({ children }) => <>{children}</>;
-
-  MockPublicRoute.propTypes = {
-    children: PropTypes.node.isRequired,
-  };
-
-  return MockPublicRoute;
+    return MockRoute;
 });
 
 describe("App", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
+    beforeEach(() => {
+        localStorage.clear();
+    });
 
-  test("renders login page", () => {
-    render(<App />);
+    test("renders login page", () => {
+        render(<App />);
+        expect(screen.getByText("Login Page")).toBeInTheDocument();
+    });
 
-    expect(screen.getByText("Login Page")).toBeInTheDocument();
-  });
+    test("renders register page", () => {
+        window.history.pushState({}, "", "/register");
+        render(<App />);
+        expect(screen.getByText("Register Page")).toBeInTheDocument();
+    });
 
-  test("renders register page", () => {
-    window.history.pushState({}, "", "/register");
+    test("renders dashboard page", () => {
+        window.history.pushState({}, "", "/dashboard");
+        render(<App />);
+        expect(screen.getByText("Dashboard Page")).toBeInTheDocument();
+    });
 
-    render(<App />);
-
-    expect(screen.getByText("Register Page")).toBeInTheDocument();
-  });
-
-  test("renders dashboard page", () => {
-    window.history.pushState({}, "", "/dashboard");
-
-    render(<App />);
-
-    expect(screen.getByText("Dashboard Page")).toBeInTheDocument();
-  });
-
-  test("renders profile page", () => {
-    window.history.pushState({}, "", "/profile");
-
-    render(<App />);
-
-    expect(screen.getByText("Profile Page")).toBeInTheDocument();
-  });
+    test("renders profile page", () => {
+        window.history.pushState({}, "", "/profile");
+        render(<App />);
+        expect(screen.getByText("Profile Page")).toBeInTheDocument();
+    });
 });

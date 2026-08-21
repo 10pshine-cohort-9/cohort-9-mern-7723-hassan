@@ -54,22 +54,7 @@ const Profile = () => {
         fetchFiles();
     }, [accessToken]);
 
-    const handleNew = () => {
-        // Profile doesn't edit the notepad directly.
-        // Navigation to Dashboard can be handled by your router.
-    };
-
-    const handleOpen = () => {
-        // Opening files remains handled by the Dashboard.
-    };
-
-    const handleSave = () => {
-        // Save remains a Dashboard operation.
-    };
-
-    const handleExport = () => {
-        // Export remains a Dashboard operation.
-    };
+  
 
     const username = profile?.username || "Loading...";
     const email = profile?.email || "";

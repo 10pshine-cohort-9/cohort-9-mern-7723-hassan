@@ -1,92 +1,50 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import PublicRoute from "../routing/PublicRoute";
+import ProtectedRoute from "../routing/ProtectedRoute";
 
-describe("PublicRoute", () => {
+const renderProtectedRoute = () => {
+  render(
+    <MemoryRouter initialEntries={["/dashboard"]}>
+      <Routes>
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <div>Dashboard Content</div>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/login"
+          element={<div>Login Page</div>}
+        />
+      </Routes>
+    </MemoryRouter>
+  );
+};
+
+describe("ProtectedRoute", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  test("renders children when access token does not exist", () => {
-    render(
-      <MemoryRouter initialEntries={["/login"]}>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <div>Login Content</div>
-              </PublicRoute>
-            }
-          />
-
-          <Route
-            path="/dashboard"
-            element={<div>Dashboard Page</div>}
-          />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    expect(
-      screen.getByText("Login Content")
-    ).toBeInTheDocument();
-  });
-
-  test("redirects to dashboard when access token exists", () => {
+  test("renders children when access token exists", () => {
     localStorage.setItem("accessToken", "test-token");
 
-    render(
-      <MemoryRouter initialEntries={["/login"]}>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <div>Login Content</div>
-              </PublicRoute>
-            }
-          />
-
-          <Route
-            path="/dashboard"
-            element={<div>Dashboard Page</div>}
-          />
-        </Routes>
-      </MemoryRouter>
-    );
+    renderProtectedRoute();
 
     expect(
-      screen.getByText("Dashboard Page")
+      screen.getByText("Dashboard Content")
     ).toBeInTheDocument();
   });
 
-  test("renders children when access token is empty", () => {
-    localStorage.setItem("accessToken", "");
-
-    render(
-      <MemoryRouter initialEntries={["/login"]}>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <div>Login Content</div>
-              </PublicRoute>
-            }
-          />
-
-          <Route
-            path="/dashboard"
-            element={<div>Dashboard Page</div>}
-          />
-        </Routes>
-      </MemoryRouter>
-    );
+  test("redirects to login when access token does not exist", () => {
+    renderProtectedRoute();
 
     expect(
-      screen.getByText("Login Content")
+      screen.getByText("Login Page")
     ).toBeInTheDocument();
   });
 });

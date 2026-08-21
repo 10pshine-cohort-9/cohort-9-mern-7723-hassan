@@ -23,7 +23,7 @@ const Sidebar = ({
   const [filesList, setFilesList] = useState([]);
   const [avl, setAvl] = useState(false);
   const [setting, setSetting] = useState(false);
-
+  const isValidObjectId = (id) => /^[a-f\d]{24}$/i.test(id);
   const handleOpen = () => {
     setAvl(!avl);
   };
@@ -44,47 +44,57 @@ const Sidebar = ({
     navigate("/profile");
   };
 
-  const handleOpenFile = async (id) => {
-    try {
-      const res = await axios.get(`${API_URL}/note/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+const handleOpenFile = async (id) => {
+  if (!isValidObjectId(id)) {
+    alert("Invalid file ID");
+    return;
+  }
 
-      if (res.data.success) {
-        setContent(res.data.file.content);
-        onOpen?.(res.data.file);
-        setAvl(false);
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Failed to open file");
+  try {
+    const res = await axios.get(`${API_URL}/note/${id}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (res.data.success) {
+      setContent(res.data.file.content);
+      onOpen?.(res.data.file);
+      setAvl(false);
     }
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Failed to open file");
+  }
+};
 
-  const handleDeleteFile = async (id) => {
-    if (id === currentFile.id) {
-      alert("Close the current file before deleting it.");
-      return;
+const handleDeleteFile = async (id) => {
+  if (!isValidObjectId(id)) {
+    alert("Invalid file ID");
+    return;
+  }
+
+  if (id === currentFile.id) {
+    alert("Close the current file before deleting it.");
+    return;
+  }
+
+  try {
+    const res = await axios.delete(`${API_URL}/note/${id}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (res.data.success) {
+      fetchFiles();
+      setAvl(false);
     }
-
-    try {
-      const res = await axios.delete(`${API_URL}/note/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (res.data.success) {
-        fetchFiles();
-        setAvl(false);
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Failed to delete file");
-    }
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Failed to delete file");
+  }
+};
 
   const fetchProfile = async () => {
     try {

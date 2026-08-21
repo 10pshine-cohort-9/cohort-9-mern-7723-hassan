@@ -23,9 +23,8 @@ export default function PasswordInput({ id, label, value, onChange, error, autoC
         {label}
       </label>
       <div
-        className={`flex items-center rounded-md border bg-white transition-colors focus-within:border-word-500 focus-within:ring-2 focus-within:ring-word-100 ${
-          error ? 'border-red-400' : 'border-line'
-        }`}
+        className={`flex items-center rounded-md border bg-white transition-colors focus-within:border-word-500 focus-within:ring-2 focus-within:ring-word-100 ${error ? 'border-red-400' : 'border-line'
+          }`}
       >
         <input
           id={id}
@@ -36,6 +35,7 @@ export default function PasswordInput({ id, label, value, onChange, error, autoC
           autoComplete={autoComplete}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+          required
           className="w-full rounded-md bg-transparent px-3.5 py-2.5 text-ink placeholder:text-subtle/70 outline-none"
           placeholder="Enter your password"
         />

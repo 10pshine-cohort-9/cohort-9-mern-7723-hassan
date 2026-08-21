@@ -12,9 +12,7 @@ const Notepad = ({
 }) => {
   const editorRef = useRef(null);
   const accessToken = localStorage.getItem("accessToken");
-
   const [isEditing, setIsEditing] = useState(!currentFileName);
-
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
     italic: false,
@@ -23,7 +21,6 @@ const Notepad = ({
 
   useEffect(() => {
     const sanitizedContent = DOMPurify.sanitize(content || "");
-
     if (
       editorRef.current &&
       editorRef.current.innerHTML !== sanitizedContent
@@ -43,17 +40,14 @@ const Notepad = ({
           e.preventDefault();
           applyFormat("bold");
           break;
-
         case "u":
           e.preventDefault();
           applyFormat("underline");
           break;
-
         case "i":
           e.preventDefault();
           applyFormat("italic");
           break;
-
         default:
           break;
       }
@@ -74,14 +68,9 @@ const Notepad = ({
 
   const applyFormat = (command, value = null) => {
     if (!isEditing || !editorRef.current) return;
-
     editorRef.current.focus();
-
     setTimeout(() => {
-      if (typeof document.execCommand === "function") {
-        document.execCommand(command, false, value);
-      }
-
+      document.execCommand(command, false, value);
       setContent(editorRef.current.innerHTML);
       updateToolbarState();
     }, 0);
@@ -122,19 +111,18 @@ const Notepad = ({
       );
 
       const savedNote = response.data?.note;
-
       alert(response.data.message);
 
       onFileCreated?.(
         savedNote
           ? {
-              _id: savedNote._id,
-              name: savedNote.name,
-            }
+            _id: savedNote._id,
+            name: savedNote.name,
+          }
           : {
-              _id: null,
-              name: currentFileName || name,
-            }
+            _id: null,
+            name: currentFileName || name,
+          }
       );
     } catch (err) {
       if (
@@ -150,17 +138,12 @@ const Notepad = ({
         }
 
         const renamed = prompt("Enter a new file name");
-
         if (!renamed) return;
-
         return triggerSave(name, text, "rename", renamed);
       }
 
       console.error(err);
-
-      alert(
-        err.response?.data?.message || "Failed to save"
-      );
+      alert(err.response?.data?.message || "Failed to save");
     }
   };
 
@@ -173,23 +156,16 @@ const Notepad = ({
         contentRef.current,
         "overwrite"
       );
-
       return;
     }
 
     const name = prompt("Enter file name");
-
     if (!name) return;
-
-    triggerSave(
-      name,
-      contentRef.current
-    );
+    triggerSave(name, contentRef.current);
   }, [saveTrigger]);
 
   const handleInput = () => {
     if (!editorRef.current) return;
-
     setContent(editorRef.current.innerHTML);
   };
 
@@ -202,38 +178,32 @@ const Notepad = ({
             onClick={() => applyFormat("bold")}
             disabled={!isEditing}
             aria-pressed={activeFormats.bold}
-            className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${
-              activeFormats.bold ? "bg-gray-300" : ""
-            }`}
+            className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${activeFormats.bold ? "bg-gray-300" : ""
+              }`}
           >
             <strong>Bold</strong>
           </button>
-
           <button
             type="button"
             onClick={() => applyFormat("italic")}
             disabled={!isEditing}
             aria-pressed={activeFormats.italic}
-            className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${
-              activeFormats.italic ? "bg-gray-300" : ""
-            }`}
+            className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${activeFormats.italic ? "bg-gray-300" : ""
+              }`}
           >
             <em>Italic</em>
           </button>
-
           <button
             type="button"
             onClick={() => applyFormat("underline")}
             disabled={!isEditing}
             aria-pressed={activeFormats.underline}
-            className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${
-              activeFormats.underline ? "bg-gray-300" : ""
-            }`}
+            className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${activeFormats.underline ? "bg-gray-300" : ""
+              }`}
           >
             <u>Underline</u>
           </button>
         </div>
-
         {currentFileName && !isEditing && (
           <button
             type="button"
@@ -244,11 +214,11 @@ const Notepad = ({
           </button>
         )}
       </div>
-
       <div
         ref={editorRef}
         contentEditable={isEditing}
         role="textbox"
+        tabIndex={0}
         aria-readonly={!isEditing}
         aria-multiline="true"
         aria-label="Note content"
@@ -259,9 +229,8 @@ const Notepad = ({
         onInput={isEditing ? handleInput : undefined}
         onMouseUp={updateToolbarState}
         onKeyUp={updateToolbarState}
-        className={`min-h-0 flex-1 w-full p-4 overflow-y-auto border rounded-md outline-none whitespace-pre-wrap break-words text-left ${
-          isEditing ? "bg-white" : "bg-slate-100"
-        }`}
+        className={`min-h-0 flex-1 w-full p-4 overflow-y-auto border rounded-md outline-none whitespace-pre-wrap break-words text-left ${isEditing ? "bg-white" : "bg-slate-100"
+          }`}
       />
     </div>
   );
