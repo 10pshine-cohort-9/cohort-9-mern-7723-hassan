@@ -7,13 +7,29 @@ jest.mock("./pages/Register", () => () => <div>Register Page</div>);
 jest.mock("./pages/Dashboard", () => () => <div>Dashboard Page</div>);
 jest.mock("./pages/Profile", () => () => <div>Profile Page</div>);
 
-jest.mock("./routing/ProtectedRoute", () => ({ children }) => (
-  <>{children}</>
-));
+jest.mock("./routing/ProtectedRoute", () => {
+  const PropTypes = require("prop-types");
 
-jest.mock("./routing/PublicRoute", () => ({ children }) => (
-  <>{children}</>
-));
+  const MockProtectedRoute = ({ children }) => <>{children}</>;
+
+  MockProtectedRoute.propTypes = {
+    children: PropTypes.node.isRequired,
+  };
+
+  return MockProtectedRoute;
+});
+
+jest.mock("./routing/PublicRoute", () => {
+  const PropTypes = require("prop-types");
+
+  const MockPublicRoute = ({ children }) => <>{children}</>;
+
+  MockPublicRoute.propTypes = {
+    children: PropTypes.node.isRequired,
+  };
+
+  return MockPublicRoute;
+});
 
 describe("App", () => {
   beforeEach(() => {

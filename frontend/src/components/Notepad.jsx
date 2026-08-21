@@ -41,17 +41,17 @@ const Notepad = ({
       switch (e.key.toLowerCase()) {
         case "b":
           e.preventDefault();
-          document.execCommand("bold");
+          applyFormat("bold");
           break;
 
         case "u":
           e.preventDefault();
-          document.execCommand("underline");
+          applyFormat("underline");
           break;
 
         case "i":
           e.preventDefault();
-          document.execCommand("italic");
+          applyFormat("italic");
           break;
 
         default:
@@ -60,31 +60,32 @@ const Notepad = ({
     }
   };
 
- const updateToolbarState = () => {
-  if (typeof document.queryCommandState !== "function") {
-    return;
-  }
-
-  setActiveFormats({
-    bold: document.queryCommandState("bold"),
-    italic: document.queryCommandState("italic"),
-    underline: document.queryCommandState("underline"),
-  });
-};
-  const applyFormat = (command, value = null) => {
-  if (!isEditing || !editorRef.current) return;
-
-  editorRef.current.focus();
-
-  setTimeout(() => {
-    if (typeof document.execCommand === "function") {
-      document.execCommand(command, false, value);
+  const updateToolbarState = () => {
+    if (typeof document.queryCommandState !== "function") {
+      return;
     }
 
-    setContent(editorRef.current.innerHTML);
-    updateToolbarState();
-  }, 0);
-};
+    setActiveFormats({
+      bold: document.queryCommandState("bold"),
+      italic: document.queryCommandState("italic"),
+      underline: document.queryCommandState("underline"),
+    });
+  };
+
+  const applyFormat = (command, value = null) => {
+    if (!isEditing || !editorRef.current) return;
+
+    editorRef.current.focus();
+
+    setTimeout(() => {
+      if (typeof document.execCommand === "function") {
+        document.execCommand(command, false, value);
+      }
+
+      setContent(editorRef.current.innerHTML);
+      updateToolbarState();
+    }, 0);
+  };
 
   const contentRef = useRef(content);
 
@@ -200,6 +201,7 @@ const Notepad = ({
             type="button"
             onClick={() => applyFormat("bold")}
             disabled={!isEditing}
+            aria-pressed={activeFormats.bold}
             className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${
               activeFormats.bold ? "bg-gray-300" : ""
             }`}
@@ -211,6 +213,7 @@ const Notepad = ({
             type="button"
             onClick={() => applyFormat("italic")}
             disabled={!isEditing}
+            aria-pressed={activeFormats.italic}
             className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${
               activeFormats.italic ? "bg-gray-300" : ""
             }`}
@@ -222,6 +225,7 @@ const Notepad = ({
             type="button"
             onClick={() => applyFormat("underline")}
             disabled={!isEditing}
+            aria-pressed={activeFormats.underline}
             className={`px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 ${
               activeFormats.underline ? "bg-gray-300" : ""
             }`}
@@ -245,6 +249,7 @@ const Notepad = ({
         ref={editorRef}
         contentEditable={isEditing}
         role="textbox"
+        aria-readonly={!isEditing}
         aria-multiline="true"
         aria-label="Note content"
         suppressContentEditableWarning

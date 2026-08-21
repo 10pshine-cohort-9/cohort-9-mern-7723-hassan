@@ -31,18 +31,24 @@ describe("Settings", () => {
   });
 
   test("logs out and navigates to login", async () => {
+    const user = userEvent.setup();
+
     render(
       <MemoryRouter>
         <Settings />
       </MemoryRouter>
     );
 
-    await userEvent.click(
-      screen.getByRole("button", { name: "Logout" })
-    );
+    try {
+      await user.click(
+        screen.getByRole("button", { name: "Logout" })
+      );
 
-    expect(localStorage.getItem("accessToken")).toBeNull();
-    expect(mockNavigate).toHaveBeenCalledWith("/login");
+      expect(localStorage.getItem("accessToken")).toBeNull();
+      expect(mockNavigate).toHaveBeenCalledWith("/login");
+    } catch (error) {
+      throw new Error("Logout test failed", { cause: error });
+    }
   });
 
   test("navigates to profile when Visit Profile is clicked", async () => {
