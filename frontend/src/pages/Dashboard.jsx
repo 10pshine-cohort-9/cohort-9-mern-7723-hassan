@@ -131,6 +131,14 @@ const Dashboard = () => {
         <div
           className="fixed inset-0 bg-black/50 z-30 md:hidden"
           onClick={toggleSidebar}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              toggleSidebar();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Close sidebar"
         />
       )}
 
