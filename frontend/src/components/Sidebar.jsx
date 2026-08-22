@@ -5,6 +5,8 @@ import AvailableNotes from "./AvailableNotes";
 import { API_URL } from "../config";
 import Setting from "./Setting";
 
+const OBJECT_ID_REGEX = /^[a-fA-F0-9]{24}$/;
+
 const Sidebar = ({
   onNew,
   onSave,
@@ -23,8 +25,6 @@ const Sidebar = ({
   const [filesList, setFilesList] = useState([]);
   const [avl, setAvl] = useState(false);
   const [setting, setSetting] = useState(false);
-
-  const isValidObjectId = (id) => /^[a-f\d]{24}$/i.test(id);
 
   const handleOpen = () => {
     setAvl(!avl);
@@ -47,15 +47,15 @@ const Sidebar = ({
   };
 
   const handleOpenFile = async (id) => {
-    if (!isValidObjectId(id)) {
+    if (typeof id !== "string" || !OBJECT_ID_REGEX.test(id)) {
       alert("Invalid file ID");
       return;
     }
 
-    const fileId = encodeURIComponent(id);
-
     try {
-      const res = await axios.get(`${API_URL}/note/${fileId}`, {
+      const url = new URL(`/note/${id}`, API_URL);
+
+      const res = await axios.get(url.toString(), {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -73,7 +73,7 @@ const Sidebar = ({
   };
 
   const handleDeleteFile = async (id) => {
-    if (!isValidObjectId(id)) {
+    if (typeof id !== "string" || !OBJECT_ID_REGEX.test(id)) {
       alert("Invalid file ID");
       return;
     }
@@ -83,10 +83,10 @@ const Sidebar = ({
       return;
     }
 
-    const fileId = encodeURIComponent(id);
-
     try {
-      const res = await axios.delete(`${API_URL}/note/${fileId}`, {
+      const url = new URL(`/note/${id}`, API_URL);
+
+      const res = await axios.delete(url.toString(), {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -183,6 +183,7 @@ const Sidebar = ({
 
   const handleFileSelected = (event) => {
     const file = event.target.files?.[0];
+
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith(".txt")) {
@@ -208,10 +209,8 @@ const Sidebar = ({
 
   return (
     <div className="h-full flex flex-col justify-between bg-slate-800 text-gray-200 p-4 mt-6">
-
       {/* Action Buttons */}
       <div className="space-y-2.5 flex-1">
-
         {/* Home */}
         {isProfile && (
           <button
@@ -230,7 +229,7 @@ const Sidebar = ({
           Create New
         </button>
 
-        {/* Open - only on Home */}
+        {/* Open */}
         {!isProfile && (
           <div className="relative w-full" ref={openDropdownRef}>
             <button
@@ -253,7 +252,7 @@ const Sidebar = ({
           </div>
         )}
 
-        {/* Save - only on Home */}
+        {/* Save */}
         {!isProfile && (
           <button
             onClick={onSave}
@@ -263,7 +262,7 @@ const Sidebar = ({
           </button>
         )}
 
-        {/* Export - only on Home */}
+        {/* Export */}
         {!isProfile && (
           <button
             onClick={onExport}
@@ -273,7 +272,7 @@ const Sidebar = ({
           </button>
         )}
 
-        {/* Import - only on Home */}
+        {/* Import */}
         {!isProfile && (
           <>
             <button
