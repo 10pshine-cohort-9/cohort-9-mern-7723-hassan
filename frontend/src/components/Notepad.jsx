@@ -70,6 +70,7 @@ const Notepad = ({
     if (!isEditing || !editorRef.current) return;
     editorRef.current.focus();
     setTimeout(() => {
+      if (typeof document.execCommand !== "function") return;
       document.execCommand(command, false, value);
       setContent(editorRef.current.innerHTML);
       updateToolbarState();

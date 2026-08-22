@@ -53,7 +53,7 @@ const Sidebar = ({
     }
 
     try {
-      const url = new URL(`/note/${id}`, API_URL);
+      const url = new URL(`note/${id}`, API_URL);
 
       const res = await axios.get(url.toString(), {
         headers: {
@@ -84,7 +84,7 @@ const Sidebar = ({
     }
 
     try {
-      const url = new URL(`/note/${id}`, API_URL);
+      const url = new URL(`note/${id}`, API_URL);
 
       const res = await axios.delete(url.toString(), {
         headers: {

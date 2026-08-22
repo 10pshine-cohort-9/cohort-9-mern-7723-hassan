@@ -13,6 +13,7 @@ function handleRouteError(error, context, next) {
     const { email, userId, ...safeContext } = context || {};
     error.context = safeContext;
     next(error);
+
 }
 
 function isValidEmail(email) {
@@ -53,6 +54,7 @@ router.post("/login", async (req, res, next) => {
                 "Invalid email or password format"
             );
         }
+
         const foundUser = await User.findOne({ email: normalizedEmail });
         const isMatch = await bcrypt.compare(
             password,
@@ -99,6 +101,7 @@ router.post("/login", async (req, res, next) => {
 router.post("/register", async (req, res, next) => {
     try {
         const { username, email, password } = req.body;
+
         if (!username || !email || !password) {
             return invalidInputResponse(
                 res,
@@ -115,15 +118,18 @@ router.post("/register", async (req, res, next) => {
                 "Invalid input format"
             );
         }
+
         if (!isValidEmail(email)) {
             return invalidInputResponse(
                 res,
                 "Invalid input format"
             );
         }
+        const normalizedEmail = email.trim();
         const existingUser = await User.findOne({
-            email: String(email)
+            email: normalizedEmail
         });
+
         if (existingUser) {
             return res.status(409).json({
                 message: "User already exists"
@@ -131,6 +137,7 @@ router.post("/register", async (req, res, next) => {
         }
         const passwordRegex =
             /^(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,}$/;
+
         if (!passwordRegex.test(password)) {
             return res.status(400).json({
                 success: false,
@@ -138,13 +145,14 @@ router.post("/register", async (req, res, next) => {
                     "Password must be at least 6 characters long and contain at least one number and one special character."
             });
         }
+
         const hashedPassword = await bcrypt.hash(
             password,
             saltRounds
         );
         const newUser = new User({
             username,
-            email,
+            email: normalizedEmail,
             password: hashedPassword
         });
         await newUser.save();
@@ -152,6 +160,7 @@ router.post("/register", async (req, res, next) => {
             { userId: newUser._id },
             "User registered"
         );
+
         return res.status(201).json({
             success: true,
             message: "User registered successfully"
@@ -186,5 +195,4 @@ router.get("/profile", auth, async (req, res, next) => {
         );
     }
 });
-
 module.exports = router;
