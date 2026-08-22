@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  /* Fixed, subtle Word-like background applied across the whole app */
+  background-color: #FAF9F8;
+  background-image:
+    radial-gradient(circle at 100% 0%, rgba(43, 87, 154, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(43, 87, 154, 0.05) 0%, transparent 45%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Consistent, visible keyboard focus ring across the app */
+:focus-visible {
+  outline: 2px solid #2B579A;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
