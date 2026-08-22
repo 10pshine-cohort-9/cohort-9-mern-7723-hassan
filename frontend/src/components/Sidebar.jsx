@@ -23,7 +23,9 @@ const Sidebar = ({
   const [filesList, setFilesList] = useState([]);
   const [avl, setAvl] = useState(false);
   const [setting, setSetting] = useState(false);
+
   const isValidObjectId = (id) => /^[a-f\d]{24}$/i.test(id);
+
   const handleOpen = () => {
     setAvl(!avl);
   };
@@ -44,57 +46,61 @@ const Sidebar = ({
     navigate("/profile");
   };
 
-const handleOpenFile = async (id) => {
-  if (!isValidObjectId(id)) {
-    alert("Invalid file ID");
-    return;
-  }
-
-  try {
-    const res = await axios.get(`${API_URL}/note/${id}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (res.data.success) {
-      setContent(res.data.file.content);
-      onOpen?.(res.data.file);
-      setAvl(false);
+  const handleOpenFile = async (id) => {
+    if (!isValidObjectId(id)) {
+      alert("Invalid file ID");
+      return;
     }
-  } catch (error) {
-    console.error(error);
-    alert("Failed to open file");
-  }
-};
 
-const handleDeleteFile = async (id) => {
-  if (!isValidObjectId(id)) {
-    alert("Invalid file ID");
-    return;
-  }
+    const fileId = encodeURIComponent(id);
 
-  if (id === currentFile.id) {
-    alert("Close the current file before deleting it.");
-    return;
-  }
+    try {
+      const res = await axios.get(`${API_URL}/note/${fileId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-  try {
-    const res = await axios.delete(`${API_URL}/note/${id}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (res.data.success) {
-      fetchFiles();
-      setAvl(false);
+      if (res.data.success) {
+        setContent(res.data.file.content);
+        onOpen?.(res.data.file);
+        setAvl(false);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to open file");
     }
-  } catch (error) {
-    console.error(error);
-    alert("Failed to delete file");
-  }
-};
+  };
+
+  const handleDeleteFile = async (id) => {
+    if (!isValidObjectId(id)) {
+      alert("Invalid file ID");
+      return;
+    }
+
+    if (id === currentFile.id) {
+      alert("Close the current file before deleting it.");
+      return;
+    }
+
+    const fileId = encodeURIComponent(id);
+
+    try {
+      const res = await axios.delete(`${API_URL}/note/${fileId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (res.data.success) {
+        fetchFiles();
+        setAvl(false);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete file");
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -140,43 +146,33 @@ const handleDeleteFile = async (id) => {
 
     fetchFiles();
   }, [accessToken, refreshTrigger]);
+
   const openDropdownRef = useRef(null);
   const settingsDropdownRef = useRef(null);
 
   useEffect(() => {
-
     if (!avl && !setting) return;
 
     const handleClickOutside = (event) => {
-
       if (
         openDropdownRef.current &&
         !openDropdownRef.current.contains(event.target)
-
       ) {
-
         setAvl(false);
-
       }
 
       if (
-
         settingsDropdownRef.current &&
-
         !settingsDropdownRef.current.contains(event.target)
-
       ) {
-
         setSetting(false);
-
       }
-
     };
 
     document.addEventListener("mousedown", handleClickOutside);
 
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, [avl, setting]);
 
   const fileInputRef = useRef(null);
@@ -196,12 +192,15 @@ const handleDeleteFile = async (id) => {
     }
 
     const reader = new FileReader();
+
     reader.onload = (e) => {
       onImport?.(e.target.result, file.name);
     };
+
     reader.onerror = () => {
       alert("Failed to read file.");
     };
+
     reader.readAsText(file);
 
     event.target.value = "";
@@ -273,6 +272,7 @@ const handleDeleteFile = async (id) => {
             Export
           </button>
         )}
+
         {/* Import - only on Home */}
         {!isProfile && (
           <>
@@ -322,8 +322,9 @@ const handleDeleteFile = async (id) => {
       <button
         type="button"
         onClick={goProfile}
-        className={`border-t border-slate-700 pt-4 mt-2 w-full text-left ${isProfile ? "cursor-default" : "hover:bg-slate-700/50"
-          }`}
+        className={`border-t border-slate-700 pt-4 mt-2 w-full text-left ${
+          isProfile ? "cursor-default" : "hover:bg-slate-700/50"
+        }`}
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">

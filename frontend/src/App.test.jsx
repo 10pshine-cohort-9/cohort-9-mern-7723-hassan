@@ -7,7 +7,7 @@ jest.mock("./pages/Register", () => () => <div>Register Page</div>);
 jest.mock("./pages/Dashboard", () => () => <div>Dashboard Page</div>);
 jest.mock("./pages/Profile", () => () => <div>Profile Page</div>);
 
-jest.mock("./routing/ProtectedRoute", () => {
+jest.mock('./routing/ProtectedRoute', () => {
     const PropTypes = require("prop-types");
     const MockRoute = ({ children }) => <>{children}</>;
 

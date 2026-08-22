@@ -3,6 +3,7 @@ import Heading from "../components/Heading";
 import Sidebar from "../components/Sidebar";
 import Notepad from "../components/Notepad";
 import { connectSocket, disconnectSocket } from "../socket";
+
 const Dashboard = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [saveTrigger, setSaveTrigger] = useState(0);
@@ -10,6 +11,7 @@ const Dashboard = () => {
   const [fileCreated, setFileCreated] = useState(0);
   const [currentFile, setCurrentFile] = useState({ id: null, name: null });
   const currentFileRef = useRef(currentFile);
+
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   useEffect(() => {
@@ -25,9 +27,11 @@ const Dashboard = () => {
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
   useEffect(() => {
     currentFileRef.current = currentFile;
   }, [currentFile]);
+
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) return;
@@ -40,6 +44,7 @@ const Dashboard = () => {
 
     socket.on("note:updated", (updatedNote) => {
       setFileCreated((prev) => prev + 1);
+
       if (currentFileRef.current.id === updatedNote._id) {
         setContent(updatedNote.content);
       }
@@ -47,6 +52,7 @@ const Dashboard = () => {
 
     socket.on("note:deleted", ({ _id }) => {
       setFileCreated((prev) => prev + 1);
+
       if (currentFileRef.current.id === _id) {
         setContent("");
         setCurrentFile({ id: null, name: null });
@@ -57,6 +63,7 @@ const Dashboard = () => {
       disconnectSocket();
     };
   }, []);
+
   const handleNew = () => {
     setContent("");
     setCurrentFile({ id: null, name: null });
@@ -91,11 +98,14 @@ const Dashboard = () => {
       content,
       "text/html"
     ).body.textContent;
-    const blob = new Blob([exportedText], { type: "text/plain;charset=utf-8" });
+
+    const blob = new Blob([exportedText], {
+      type: "text/plain;charset=utf-8",
+    });
 
     const url = URL.createObjectURL(blob);
-
     const link = document.createElement("a");
+
     link.href = url;
     link.download = fileName;
 
@@ -104,10 +114,6 @@ const Dashboard = () => {
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
-  };
-
-  const handleSettings = () => {
-    //console.log("Settings clicked");
   };
 
   return (
@@ -149,7 +155,6 @@ const Dashboard = () => {
           onSave={() => setSaveTrigger((prev) => prev + 1)}
           onExport={handleExport}
           onImport={handleImport}
-          onSettings={handleSettings}
           setContent={setContent}
           refreshTrigger={fileCreated}
           currentFile={currentFile}
@@ -179,6 +184,7 @@ const Dashboard = () => {
                   name: savedNote.name ?? prev.name,
                 }));
               }
+
               setFileCreated((prev) => prev + 1);
             }}
           />

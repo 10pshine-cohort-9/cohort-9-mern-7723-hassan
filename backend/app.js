@@ -9,9 +9,9 @@ const logger = require('./pinoPattern/logger');
 const notesRouter= require("./routes/note");
 
 const app = express();
-
+app.disable("x-powered-by");
 const corsOptions = {
-    origin: "http://localhost:5173"||"http://localhost:5174",
+    origin: "http://localhost:5173",
     optionsSuccessStatus: 200
 };
 
@@ -27,6 +27,7 @@ app.use(pinoHttp({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
+
 
 app.use("/user", userRoutes);
 app.use("/note", notesRouter);
