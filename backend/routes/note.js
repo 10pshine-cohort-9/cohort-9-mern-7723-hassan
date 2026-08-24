@@ -1,10 +1,21 @@
 const express = require("express");
 const Note = require("../models/note");
 const mongoose = require("mongoose");
-const auth = require('../middleware/auth');
-const logger = require('../pinoPattern/logger');
+const auth = require("../middleware/auth");
+const logger = require("../pinoPattern/logger");
 const socket = require("../socket");
 const router = express.Router();
+
+async function findUserNote(id, userId) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return { status: 400, message: "Invalid file ID" };
+    }
+    const note = await Note.findOne({ _id: id, user: userId });
+    if (!note) {
+        return { status: 404, message: "File not found" };
+    }
+    return { note };
+}
 
 router.post("/save", auth, async (req, res, next) => {
     try {
@@ -17,7 +28,7 @@ router.post("/save", auth, async (req, res, next) => {
             });
         }
         let finalName = name.replace(/[<>:"/\\|?*]/g, "_");
-        let existingNote = await Note.findOne({
+        const existingNote = await Note.findOne({
             user: user._id,
             title: finalName,
         });
@@ -154,22 +165,14 @@ router.get("/files", auth, async (req, res, next) => {
 router.get("/:id", auth, async (req, res, next) => {
     try {
         const user = req.user;
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({
+        const result = await findUserNote(req.params.id, user._id);
+        if (result.status) {
+            return res.status(result.status).json({
                 success: false,
-                message: "Invalid file ID",
+                message: result.message,
             });
         }
-        const note = await Note.findOne({
-            _id: req.params.id,
-            user: user._id,
-        });
-        if (!note) {
-            return res.status(404).json({
-                success: false,
-                message: "File not found",
-            });
-        }
+        const { note } = result;
         logger.info(
             { userId: user._id, noteId: note._id },
             "Note retrieved"
@@ -187,7 +190,10 @@ router.get("/:id", auth, async (req, res, next) => {
             },
         });
     } catch (error) {
-        error.context = { userId: req.user?._id, noteId: req.params.id };
+        error.context = {
+            userId: req.user?._id,
+            noteId: req.params.id,
+        };
         next(error);
     }
 });
@@ -195,22 +201,14 @@ router.get("/:id", auth, async (req, res, next) => {
 router.delete("/:id", auth, async (req, res, next) => {
     try {
         const user = req.user;
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({
+        const result = await findUserNote(req.params.id, user._id);
+        if (result.status) {
+            return res.status(result.status).json({
                 success: false,
-                message: "Invalid file ID",
+                message: result.message,
             });
         }
-        const note = await Note.findOne({
-            _id: req.params.id,
-            user: user._id,
-        });
-        if (!note) {
-            return res.status(404).json({
-                success: false,
-                message: "File not found",
-            });
-        }
+        const { note } = result;
         await note.deleteOne();
         socket.getIO().to(`user:${user._id}`).emit("note:deleted", {
             _id: note._id,
@@ -224,7 +222,10 @@ router.delete("/:id", auth, async (req, res, next) => {
             message: "File deleted successfully",
         });
     } catch (error) {
-        error.context = { userId: req.user?._id, noteId: req.params.id };
+        error.context = {
+            userId: req.user?._id,
+            noteId: req.params.id,
+        };
         next(error);
     }
 });

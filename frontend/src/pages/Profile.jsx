@@ -54,23 +54,6 @@ const Profile = () => {
         fetchFiles();
     }, [accessToken]);
 
-    const handleNew = () => {
-        // Profile doesn't edit the notepad directly.
-        // Navigation to Dashboard can be handled by your router.
-    };
-
-    const handleOpen = () => {
-        // Opening files remains handled by the Dashboard.
-    };
-
-    const handleSave = () => {
-        // Save remains a Dashboard operation.
-    };
-
-    const handleExport = () => {
-        // Export remains a Dashboard operation.
-    };
-
     const username = profile?.username || "Loading...";
     const email = profile?.email || "";
     const initial = profile?.username?.charAt(0).toUpperCase() || "?";
@@ -90,30 +73,38 @@ const Profile = () => {
                 <div
                     className="fixed inset-0 bg-black/50 z-30 md:hidden"
                     onClick={toggleSidebar}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                            toggleSidebar();
+                        }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Close sidebar"
                 />
             )}
 
             {/* Sidebar */}
             <div
                 className={`
-          fixed
-          top-16
-          left-0
-          w-64
-          h-[calc(100vh-4rem)]
-          bg-gray-800
-          transition-transform
-          duration-300
-          z-40
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
+                    fixed
+                    top-16
+                    left-0
+                    w-64
+                    h-[calc(100vh-4rem)]
+                    bg-gray-800
+                    transition-transform
+                    duration-300
+                    z-40
+                    ${isOpen ? "translate-x-0" : "-translate-x-full"}
+                `}
             >
                 <Sidebar
                     onNew={() => navigate("/dashboard")}
-                    onOpen={() => { }}
-                    onSave={() => { }}
-                    onExport={() => { }}
-                    setContent={() => { }}
+                    onOpen={() => {}}
+                    onSave={() => {}}
+                    onExport={() => {}}
+                    setContent={() => {}}
                     refreshTrigger={0}
                     currentFile={{ id: null, name: null }}
                     isProfile={true}
@@ -123,11 +114,11 @@ const Profile = () => {
             {/* Main Content */}
             <main
                 className={`
-          pt-16
-          transition-all
-          duration-300
-          ${isOpen ? "md:ml-64" : "md:ml-0"}
-        `}
+                    pt-16
+                    transition-all
+                    duration-300
+                    ${isOpen ? "md:ml-64" : "md:ml-0"}
+                `}
             >
                 <div className="min-h-[calc(100vh-4rem)] p-6 md:p-10">
                     <div className="max-w-4xl mx-auto">

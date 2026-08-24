@@ -5,6 +5,8 @@ import AvailableNotes from "./AvailableNotes";
 import { API_URL } from "../config";
 import Setting from "./Setting";
 
+const OBJECT_ID_REGEX = /^[a-fA-F0-9]{24}$/;
+
 const Sidebar = ({
   onNew,
   onSave,
@@ -45,8 +47,15 @@ const Sidebar = ({
   };
 
   const handleOpenFile = async (id) => {
+    if (typeof id !== "string" || !OBJECT_ID_REGEX.test(id)) {
+      alert("Invalid file ID");
+      return;
+    }
+
     try {
-      const res = await axios.get(`${API_URL}/note/${id}`, {
+      const url = new URL(`note/${id}`, API_URL);
+
+      const res = await axios.get(url.toString(), {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -64,13 +73,20 @@ const Sidebar = ({
   };
 
   const handleDeleteFile = async (id) => {
+    if (typeof id !== "string" || !OBJECT_ID_REGEX.test(id)) {
+      alert("Invalid file ID");
+      return;
+    }
+
     if (id === currentFile.id) {
       alert("Close the current file before deleting it.");
       return;
     }
 
     try {
-      const res = await axios.delete(`${API_URL}/note/${id}`, {
+      const url = new URL(`note/${id}`, API_URL);
+
+      const res = await axios.delete(url.toString(), {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -130,43 +146,33 @@ const Sidebar = ({
 
     fetchFiles();
   }, [accessToken, refreshTrigger]);
+
   const openDropdownRef = useRef(null);
   const settingsDropdownRef = useRef(null);
 
   useEffect(() => {
-
     if (!avl && !setting) return;
 
     const handleClickOutside = (event) => {
-
       if (
         openDropdownRef.current &&
         !openDropdownRef.current.contains(event.target)
-
       ) {
-
         setAvl(false);
-
       }
 
       if (
-
         settingsDropdownRef.current &&
-
         !settingsDropdownRef.current.contains(event.target)
-
       ) {
-
         setSetting(false);
-
       }
-
     };
 
     document.addEventListener("mousedown", handleClickOutside);
 
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, [avl, setting]);
 
   const fileInputRef = useRef(null);
@@ -177,6 +183,7 @@ const Sidebar = ({
 
   const handleFileSelected = (event) => {
     const file = event.target.files?.[0];
+
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith(".txt")) {
@@ -186,12 +193,15 @@ const Sidebar = ({
     }
 
     const reader = new FileReader();
+
     reader.onload = (e) => {
       onImport?.(e.target.result, file.name);
     };
+
     reader.onerror = () => {
       alert("Failed to read file.");
     };
+
     reader.readAsText(file);
 
     event.target.value = "";
@@ -199,10 +209,8 @@ const Sidebar = ({
 
   return (
     <div className="h-full flex flex-col justify-between bg-slate-800 text-gray-200 p-4 mt-6">
-
       {/* Action Buttons */}
       <div className="space-y-2.5 flex-1">
-
         {/* Home */}
         {isProfile && (
           <button
@@ -221,7 +229,7 @@ const Sidebar = ({
           Create New
         </button>
 
-        {/* Open - only on Home */}
+        {/* Open */}
         {!isProfile && (
           <div className="relative w-full" ref={openDropdownRef}>
             <button
@@ -244,7 +252,7 @@ const Sidebar = ({
           </div>
         )}
 
-        {/* Save - only on Home */}
+        {/* Save */}
         {!isProfile && (
           <button
             onClick={onSave}
@@ -254,7 +262,7 @@ const Sidebar = ({
           </button>
         )}
 
-        {/* Export - only on Home */}
+        {/* Export */}
         {!isProfile && (
           <button
             onClick={onExport}
@@ -263,7 +271,8 @@ const Sidebar = ({
             Export
           </button>
         )}
-        {/* Import - only on Home */}
+
+        {/* Import */}
         {!isProfile && (
           <>
             <button
@@ -312,8 +321,9 @@ const Sidebar = ({
       <button
         type="button"
         onClick={goProfile}
-        className={`border-t border-slate-700 pt-4 mt-2 w-full text-left ${isProfile ? "cursor-default" : "hover:bg-slate-700/50"
-          }`}
+        className={`border-t border-slate-700 pt-4 mt-2 w-full text-left ${
+          isProfile ? "cursor-default" : "hover:bg-slate-700/50"
+        }`}
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">

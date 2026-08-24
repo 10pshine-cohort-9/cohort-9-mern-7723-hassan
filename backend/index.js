@@ -12,13 +12,6 @@ const io = initSocket(server);
 (async () => {
     try {
         await connectDB();
-
-        // OLD:
-        // const server = app.listen(PORT, () => {
-        //     logger.info({ port: PORT }, "Server started");
-        // });
-
-        // NEW — server already created above, just start listening on it
         server.listen(PORT, () => {
             logger.info({ port: PORT }, "Server started");
         });

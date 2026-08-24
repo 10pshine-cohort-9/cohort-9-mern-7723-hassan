@@ -1,5 +1,3 @@
-import { render } from "@testing-library/react";
-
 jest.mock("socket.io-client", () => ({
   io: jest.fn(() => ({
     disconnect: jest.fn(),
